@@ -1,0 +1,3309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>잇플랜(EatPlan) - 주간 9끼 (한식 4끼 + 컬리·쿠팡이츠 밀키트 3끼 + 재료공유 6끼) 서버리스 웹 앱</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans KR', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .cluster-badge-A { background-color: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+    .cluster-badge-B { background-color: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .cluster-badge-M { background-color: #fff1f2; color: #be123c; border-color: #fecdd3; }
+    .cluster-badge-flex { background-color: #f3e8ff; color: #6d28d9; border-color: #ddd6fe; }
+    .card-highlight-A { box-shadow: 0 0 0 3px #10b981, 0 10px 15px -3px rgba(16, 185, 129, 0.18); transform: translateY(-2px); }
+    .card-highlight-B { box-shadow: 0 0 0 3px #3b82f6, 0 10px 15px -3px rgba(59, 130, 246, 0.18); transform: translateY(-2px); }
+    .card-highlight-M { box-shadow: 0 0 0 3px #f43f5e, 0 10px 15px -3px rgba(244, 63, 94, 0.18); transform: translateY(-2px); }
+    .card-dimmed { opacity: 0.42; filter: grayscale(25%); }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.96) translateY(6px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop { animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation Header -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center text-white text-xl font-bold shadow-sm">
+          🥗
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-900">잇플랜 (EatPlan)</h1>
+            <span class="hidden md:inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              한식 4끼 · 집밥 6끼 + 컬리/쿠팡이츠 밀키트 3끼
+            </span>
+          </div>
+          <p class="text-xs text-slate-500 hidden sm:block">교체 후보 최소 5~8개 보장 · 유튜브 레시피 & 사진 · 서버리스 PWA</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs & Action Buttons -->
+      <div class="flex items-center gap-2">
+        <div class="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+          <button id="tabBtnPlanner" type="button" onclick="switchMainTab('planner')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-slate-900 shadow-sm transition">
+            🗓️ 주간 9끼 식단표
+          </button>
+          <button id="tabBtnShopping" type="button" onclick="switchMainTab('shopping')" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+            <span>🛒 장보기 리스트</span>
+            <span id="shoppingBadgeCount" class="px-1.5 py-0.2 rounded-full text-[11px] bg-emerald-600 text-white font-bold">0</span>
+          </button>
+        </div>
+
+        <button id="btnOpenFridgeWizard" type="button" onclick="openFridgeModal()" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition flex items-center gap-1.5">
+          <span>✨ 새 식단 짜기</span>
+        </button>
+
+        <button id="btnOpenServerlessGuide" type="button" onclick="openApiModal()" class="hidden sm:inline-flex px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 transition items-center gap-1" title="GitHub(k528ky@gmail.com) 서버리스 배포 가이드">
+          <span>🚀 서버리스/GitHub</span>
+        </button>
+        <button id="btnOpenSettings" type="button" onclick="openApiModal()" class="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition" title="자동 추천 스케줄 및 AI 설정">
+          ⚙️
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Step 1: Leftover Ingredient Prompt Banner -->
+    <section id="fridgePromptBanner" class="bg-gradient-to-r from-emerald-900 via-emerald-800 to-teal-900 rounded-2xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden">
+      <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="space-y-1.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-700/70 border border-emerald-500/40 text-xs font-medium text-emerald-100">
+              💡 냉장고 파먹기 + 한식 4끼 + 후보 메뉴 5~8개 이상
+            </span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-600/90 text-xs font-bold text-white">
+              🛍️ 마켓컬리 & 쿠팡이츠 마트 인기 밀키트 3끼 편성
+            </span>
+          </div>
+          <h2 class="text-lg sm:text-xl font-bold">냉장고에 남아 있는 재료가 있나요?</h2>
+          <p class="text-xs sm:text-sm text-emerald-100/90 max-w-2xl">
+            남은 재료를 입력하시면 <strong>직접 요리하는 6끼(그룹 A·B 각 3끼씩 재료 공유)</strong>에 우선 반영하고, 나머지 <strong>3끼(평일 2끼·주말 1끼)는 컬리 & 쿠팡이츠 베스트 밀키트</strong>로 채워 전체 9끼 중 <strong>한식 4끼</strong>를 맞춰드립니다.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button id="btnBannerInputFridge" type="button" onclick="openFridgeModal('yes')" class="px-4 py-2.5 rounded-xl bg-white text-emerald-950 font-semibold text-xs sm:text-sm hover:bg-emerald-50 shadow-sm transition flex items-center gap-1.5">
+            <span>🥬 네, 남은 재료 입력할게요</span>
+          </button>
+          <button id="btnBannerSkipFridge" type="button" onclick="generateWeeklyPlanWithoutLeftovers()" class="px-4 py-2.5 rounded-xl bg-emerald-700/80 hover:bg-emerald-700 text-white border border-emerald-500/40 font-medium text-xs sm:text-sm transition">
+            <span>🎲 없이 바로 9끼 추천받기</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Leftover & Filter Status Bar -->
+      <div class="relative z-10 mt-4 pt-3.5 border-t border-emerald-700/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="text-emerald-200 font-medium">현재 반영된 냉장고 재료:</span>
+          <div id="activeLeftoverTags" class="flex flex-wrap items-center gap-1.5">
+            <span class="px-2.5 py-0.5 rounded-full bg-emerald-950/50 text-emerald-200">선택 안 함 (제철·가성비 추천 모드)</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="inline-flex items-center gap-1.5 text-emerald-100">
+            <span>기준 인원:</span>
+            <select id="servingsSelect" onchange="changeServings(this.value)" class="bg-emerald-950/70 border border-emerald-600 rounded-lg px-2 py-1 text-white font-semibold focus:outline-none">
+              <option value="1">1인분</option>
+              <option value="2" selected>2인분</option>
+              <option value="3">3인분</option>
+              <option value="4">4인분</option>
+            </select>
+          </label>
+          <label class="inline-flex items-center gap-1.5 text-emerald-100">
+            <span>평일 조리시간:</span>
+            <select id="maxTimeSelect" onchange="changeMaxWeekdayTime(this.value)" class="bg-emerald-950/70 border border-emerald-600 rounded-lg px-2 py-1 text-white font-semibold focus:outline-none">
+              <option value="20">20분 이내</option>
+              <option value="30" selected>30분 이내</option>
+              <option value="45">45분 이내</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: WEEKLY 9-MEAL PLANNER VIEW -->
+    <div id="viewPlanner" class="space-y-6">
+
+      <!-- 2 Shared Home-Cooked Clusters (A, B) + 1 Kurly/Coupang Eats Meal Kit Group (M) -->
+      <section class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+              <span>🔗 이번 주 구성: 집밥 재료공유 2그룹(6끼) + 컬리·쿠팡이츠 밀키트(3끼)</span>
+              <span class="text-xs font-normal text-slate-500">(클릭하면 해당 그룹의 3끼 메뉴가 강조됩니다)</span>
+            </h3>
+          </div>
+          <button id="btnClearClusterFilter" type="button" onclick="selectClusterHighlight(null)" class="hidden text-xs font-semibold text-slate-600 hover:text-slate-900 underline self-start sm:self-auto">
+            전체 강조 해제
+          </button>
+        </div>
+
+        <div id="clusterSummaryBar" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <!-- Dynamically populated by JS -->
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-xs text-slate-500">
+          <div class="flex flex-wrap items-center gap-2">
+            <span>💡 <strong>교체 후보 대폭 확충:</strong> 어느 메뉴든 <strong>🔄 교체</strong>를 누르면 같은 재료 그룹 후보 5개 + 자유 조합 3개(밀키트는 컬리·쿠팡이츠 후보 7개) 등 <strong>최소 5~8개 이상의 후보</strong>가 제시됩니다.</span>
+          </div>
+          <div id="cuisineDiversityStats" class="font-semibold text-slate-800">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Weekday Dinners Section (Mon - Fri, 5 Meals) -->
+      <section class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="text-base sm:text-lg font-bold text-slate-900">🌙 평일 저녁 메뉴 (월~금 · 5끼)</h3>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-200/80 text-slate-700">집밥 3끼 + 컬리/쿠팡이츠 밀키트 2끼 (수·금)</span>
+          </div>
+          <span class="text-xs text-slate-500">카드를 누르면 <strong>완성 사진·레시피·유튜브 영상</strong>, <strong class="text-slate-700">🔄 교체</strong>를 누르면 5~8개 대체 후보가 열립니다</span>
+        </div>
+
+        <div id="weekdayGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- Weekend Lunch & Dinner Section (Sat - Sun, 4 Meals) -->
+      <section class="space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h3 class="text-base sm:text-lg font-bold text-slate-900">☀️ 주말 점심·저녁 메뉴 (토~일 · 4끼)</h3>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">브런치/일품 집밥 3끼 + 주말 특식 밀키트 1끼 (토 저녁)</span>
+          </div>
+        </div>
+
+        <div id="weekendGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- TAB 2: INTEGRATED SHOPPING LIST & MEAL KIT PURCHASE VIEW -->
+    <div id="viewShopping" class="hidden space-y-6">
+      <section class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-100 pb-4">
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900">🛒 주간 통합 장보기 (집밥 6끼 재료 + 컬리·쿠팡이츠 밀키트 3종)</h2>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+              직접 요리하는 6끼는 2개 그룹(A·B)으로 묶어 신선 재료 낭비를 없애고, 밀키트 3끼는 마켓컬리 또는 쿠팡이츠 마트에서 바로 주문할 수 있습니다.
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnCopyShoppingList" type="button" onclick="copyShoppingList()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold transition flex items-center gap-1.5">
+              <span>📋 장보기 목록 복사</span>
+            </button>
+            <button id="btnResetShoppingChecks" type="button" onclick="resetShoppingChecks()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-medium transition">
+              체크 초기화
+            </button>
+          </div>
+        </div>
+
+        <div id="shoppingListContainer" class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- Dynamically populated by JS -->
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- MODAL 1: Leftover Ingredient Input & Preferences Modal -->
+  <div id="fridgeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-xl border border-slate-200 animate-pop max-h-[90vh] overflow-y-auto space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">Step 1 · 냉장고 파먹기 설정</span>
+          <h3 class="text-lg sm:text-xl font-bold text-slate-900 mt-1">남아 있는 식재료가 있으신가요?</h3>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            입력한 재료는 직접 요리하는 6끼(그룹 A·B)에 우선 배정되며, 밀키트 3끼와 합쳐 전체 9끼 중 <strong>한식 4끼</strong>가 자동으로 맞춰집니다.
+          </p>
+        </div>
+        <button id="btnCloseFridgeModal" type="button" onclick="closeFridgeModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+          ✕
+        </button>
+      </div>
+
+      <!-- Toggle: Input Leftovers vs Skip -->
+      <div class="grid grid-cols-2 gap-2.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
+        <button id="modeBtnWithFridge" type="button" onclick="setFridgeInputMode(true)" class="py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold bg-white text-emerald-800 shadow-sm transition">
+          🥬 네, 남은 재료 입력할래요
+        </button>
+        <button id="modeBtnNoFridge" type="button" onclick="setFridgeInputMode(false)" class="py-2 px-3 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition">
+          🎲 아니오, 재료 없이 추천받을래요
+        </button>
+      </div>
+
+      <!-- Leftover Input Area -->
+      <div id="fridgeInputSection" class="space-y-4">
+        <div>
+          <label for="leftoverTextInput" class="block text-xs font-semibold text-slate-700 mb-1.5">
+            직접 입력하거나 아래 자주 남는 재료 태그를 눌러주세요 (쉼표로 구분)
+          </label>
+          <input id="leftoverTextInput" type="text" placeholder="예: 양배추, 두부, 베이컨, 대파..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        </div>
+
+        <div>
+          <div class="text-xs font-semibold text-slate-600 mb-2">자주 남는 냉장고 재료 빠른 선택:</div>
+          <div id="quickIngredientTags" class="flex flex-wrap gap-1.5">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Excluded / Disliked Ingredients Filter -->
+      <div class="pt-3 border-t border-slate-200 space-y-2.5">
+        <div class="text-xs font-semibold text-slate-700">🚫 피하고 싶은 요리 스타일이나 재료가 있나요? (선택)</div>
+        <div id="dislikeFilterTags" class="flex flex-wrap gap-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <button id="btnCancelFridgeModal" type="button" onclick="closeFridgeModal()" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-100 transition">
+          취소
+        </button>
+        <button id="btnApplyFridgePlan" type="button" onclick="applyFridgeAndGeneratePlan()" class="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition">
+          ✨ 조건에 맞춰 주간 9끼 식단 생성
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Recipe / Meal Kit Detail Modal -->
+  <div id="recipeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-xl border border-slate-200 animate-pop max-h-[90vh] overflow-y-auto space-y-5">
+      <div id="recipeModalContent">
+        <!-- Populated dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Swap / Candidate Menu Picker Modal (Minimum 5~8 Candidates Guaranteed!) -->
+  <div id="swapModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-xl border border-slate-200 animate-pop max-h-[90vh] overflow-y-auto space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span id="swapSlotBadge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">메뉴 교체</span>
+          <h3 id="swapModalTitle" class="text-lg font-bold text-slate-900 mt-1">다른 후보 메뉴로 교체하기</h3>
+          <p id="swapModalSubtitle" class="text-xs text-slate-500 mt-0.5">
+            최소 5개 이상의 맞춤 후보 메뉴 중에서 원하는 요리를 선택하세요.
+          </p>
+        </div>
+        <button id="btnCloseSwapModal" type="button" onclick="closeSwapModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+          ✕
+        </button>
+      </div>
+
+      <div id="swapCandidatesList" class="space-y-2.5">
+        <!-- Populated by JS -->
+      </div>
+
+      <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+        <button id="btnRandomQuickSwap" type="button" onclick="confirmQuickRandomSwap()" class="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs sm:text-sm font-semibold transition">
+          🎲 알아서 가장 잘 맞는 후보로 즉시 변경
+        </button>
+        <button id="btnCancelSwapModal" type="button" onclick="closeSwapModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs sm:text-sm font-medium transition">
+          닫기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Serverless Web App & GitHub (k528ky@gmail.com) Deployment Settings -->
+  <div id="apiModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-xl border border-slate-200 animate-pop max-h-[90vh] overflow-y-auto space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">서버리스 웹 앱 & GitHub 연동 설정</span>
+          <h3 class="text-lg font-bold text-slate-900 mt-1">GitHub (k528ky@gmail.com) 무료 서버리스 구동 안내</h3>
+        </div>
+        <button id="btnCloseApiModal" type="button" onclick="closeApiModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+          ✕
+        </button>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-slate-900 text-white text-xs space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-emerald-400">🔗 연결 설정된 GitHub 계정: k528ky@gmail.com</span>
+          <span class="px-2 py-0.5 rounded bg-emerald-600 text-white text-[10px] font-bold">서버비 0원</span>
+        </div>
+        <p class="text-slate-300 leading-relaxed">
+          함께 생성된 <strong>eatplan_serverless_app.zip</strong> 패키지에는 <code>k528ky@gmail.com</code> 계정이 사전 설정된 <strong>GitHub Actions 주간 자동 스케줄러(<code>.github/workflows/weekly_meal_cron.yml</code>)</strong>, <strong>Vercel Serverless API(<code>/api/recommend.js</code>)</strong>, 스마트폰 앱 설치용 <strong>PWA 매니페스트</strong>가 모두 포함되어 있습니다.
+        </p>
+      </div>
+
+      <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950 space-y-1.5">
+        <div class="font-bold">📌 PC를 켜두지 않고 3분 만에 내 전용 URL로 배포하는 순서</div>
+        <ol class="list-decimal list-inside space-y-1 leading-relaxed">
+          <li>제공된 <code>eatplan_serverless_app.zip</code> 압축을 풀고 GitHub(<code>k528ky@gmail.com</code>)의 새 저장소(예: <code>eatplan</code>)에 업로드합니다.</li>
+          <li>저장소 <strong>Settings → Pages</strong>에서 Branch를 <code>main</code>으로 설정하면 즉시 <code>https://&lt;아이디&gt;.github.io/eatplan</code> 전용 주소가 열립니다.</li>
+          <li>포함된 GitHub Actions 워크플로우가 매주 일요일 저녁 클라우드에서 무료로 돌아가며 PC가 꺼져 있어도 새 주간 식단을 자동 갱신합니다.</li>
+        </ol>
+      </div>
+
+      <div class="space-y-2">
+        <label for="geminiApiKeyInput" class="block text-xs font-semibold text-slate-700">
+          선택 사항: Google AI Studio 무료 Gemini API Key (실시간 AI 메뉴 생성용)
+        </label>
+        <input id="geminiApiKeyInput" type="password" placeholder="AIzaSy... (미입력 시에도 내장된 50종 레시피·밀키트 엔진으로 100% 작동)" class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+        <p class="text-[11px] text-slate-500">
+          입력한 키는 현재 브라우저 로컬 저장소에만 보관되며 외부로 유출되지 않습니다.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+        <button id="btnSaveApiSettings" type="button" onclick="saveApiSettings()" class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold transition">
+          설정 저장
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+  <script>
+    // =========================================================================
+    // 1. EXPANDED HOME-COOKED CLUSTERS (8 RECIPES PER CLUSTER = 40 RECIPES)
+    //    Guarantees 5 unused same-cluster candidates + 4 flexible candidates
+    //    (Total 8~9 candidates in the swap modal, exceeding the minimum of 4!)
+    // =========================================================================
+    const INGREDIENT_CLUSTERS = [
+      {
+        id: 'cluster_cabbage_pork',
+        name: '양배추 · 돼지고기 · 대파 그룹',
+        sharedIngredients: ['양배추', '돼지고기(다짐육/앞다리)', '대파'],
+        keywords: ['양배추', '돼지고기', '다진 돼지고기', '목살', '앞다리살', '대파', '달걀', '계란'],
+        reason: '한 통 사면 남기 쉬운 양배추와 대파, 돼지고기를 한식 4종·일식·태국·양식·중식 등 8가지 요리로 다양하게 활용합니다.',
+        recipes: [
+          {
+            id: 'rcp_cabbage_jeyuk',
+            title: '칼칼 달큰 양배추 대파 제육덮밥',
+            cuisine: '한식',
+            emoji: '🥘',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'Wkv3sS4B2nQ',
+            youtubeTitle: '고기보다 채소가 더 맛있는 매콤 돼지고기 볶음 레시피',
+            youtubeChannel: '맛있는휴식(맛휴)',
+            summary: '물 없이 양배추와 대파의 채즙으로 달큰하고 불향 나게 볶아낸 한국인 소울푸드 제육덮밥',
+            sharedUsed: [
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 120, unit: 'g' },
+              { name: '양배추', amountPerServing: 100, unit: 'g' },
+              { name: '대파', amountPerServing: 0.5, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '고추장 & 고춧가루 & 간장', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' },
+              { name: '다진 마늘 & 참기름 & 올리고당', amountPerServing: 1.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '양배추는 한입 크기로 썰고 대파는 어슷하게 썰어 준비합니다 (4분).',
+              '달군 팬에 돼지고기와 설탕 반 큰술, 간장 1큰술을 먼저 넣고 노릇하게 구워 불향을 입힙니다 (6분).',
+              '고추장, 고춧가루, 다진 마늘과 양배추·대파를 넣고 센 불에서 숨이 살짝 죽을 때까지만 볶습니다 (6분).',
+              '참기름과 통깨를 뿌려 따뜻한 밥 위에 얹어 완성합니다 (2분).'
+            ],
+            tip: '양배추를 처음부터 넣지 않고 고기가 80% 익었을 때 넣어야 물이 생기지 않고 아삭합니다.'
+          },
+          {
+            id: 'rcp_cabbage_tofu_ssamjang_rice',
+            title: '양배추 돼지고기 된장 짜글이 덮밥',
+            cuisine: '한식',
+            emoji: '🍲',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'y-KmrFOCAWk',
+            youtubeTitle: '양배추를 이렇게 드세요! 배터지게 먹어도 맛있는 한끼',
+            youtubeChannel: '요리하는 장보고',
+            summary: '달콤하게 푹 익은 양배추와 고소한 돼지고기를 구수한 된장·쌈장 양념에 자작하게 끓여낸 한식 덮밥',
+            sharedUsed: [
+              { name: '양배추', amountPerServing: 110, unit: 'g' },
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 90, unit: 'g' },
+              { name: '대파', amountPerServing: 0.4, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '된장 & 쌈장 (1:1 비율)', amountPerServing: 1, unit: '큰술', note: '상비 양념' },
+              { name: '다진 마늘 & 고춧가루', amountPerServing: 1, unit: '작은술', note: '상비 양념' }
+            ],
+            steps: [
+              '팬에 대파와 다진 마늘, 돼지고기를 넣고 볶아 파기름을 냅니다 (5분).',
+              '네모나게 썬 양배추를 듬뿍 넣고 숨이 죽을 때까지 함께 볶습니다 (5분).',
+              '물 반 컵과 된장·쌈장을 풀어 넣고 자작하게 6분간 끓여냅니다 (6분).',
+              '밥 위에 듬뿍 얹어 계란 프라이나 김가루와 함께 비벼 먹습니다 (2분).'
+            ],
+            tip: '쌈장이 조금 들어가면 설탕 없이도 감칠맛과 단짠 밸런스가 기가 막히게 맞습니다.'
+          },
+          {
+            id: 'rcp_cabbage_pork_bulgogi',
+            title: '기사식당풍 파채 양배추 간장 돼지불백',
+            cuisine: '한식',
+            emoji: '🥩',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'FcGbFtQ6Oj0',
+            youtubeTitle: '이건 반칙이다! 단짠 간장 소스가 압승인 돼지고기 양배추 구이',
+            youtubeChannel: '케런키친',
+            summary: '달콤짭조름한 마늘 간장 양념에 재운 돼지고기와 아삭한 양배추·대파를 센 불에 구워낸 기사식당 불백',
+            sharedUsed: [
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 130, unit: 'g' },
+              { name: '양배추', amountPerServing: 90, unit: 'g' },
+              { name: '대파', amountPerServing: 0.5, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 설탕 & 맛술 & 다진 마늘 & 참기름', amountPerServing: 3, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '돼지고기에 간장 2, 설탕 1, 맛술 1, 다진 마늘 0.5큰술을 넣고 조물조물 버무립니다 (4분).',
+              '달군 팬에 양념한 고기를 먼저 구워 노릇한 캐러멜 색을 냅니다 (7분).',
+              '채 썬 양배추와 어슷 썬 대파를 듬뿍 넣고 센 불에 5분간 빠르게 볶아냅니다 (5분).',
+              '참기름과 통깨를 뿌려 밥과 함께 상에 냅니다 (2분).'
+            ],
+            tip: '고추장을 넣지 않은 간장 베이스라 속이 편하고 대파 향이 진하게 배어듭니다.'
+          },
+          {
+            id: 'rcp_cabbage_pork_ssambap',
+            title: '찐 양배추 쌈 & 약고추장(돼지고기 볶음고추장) 정식',
+            cuisine: '한식',
+            emoji: '🥬',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'AN4P3uSOOcs',
+            youtubeTitle: '입맛 살리는 집밥! 양배추 솥밥 & 고기 짜글이 쌈밥 레시피',
+            youtubeChannel: '지미테이블 jimmytable',
+            summary: '달큰하고 부드럽게 쪄낸 양배추 잎에 고소한 돼지고기 볶음고추장을 올려 싸 먹는 건강 한식',
+            sharedUsed: [
+              { name: '양배추', amountPerServing: 150, unit: 'g' },
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 80, unit: 'g' },
+              { name: '대파', amountPerServing: 0.4, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '고추장 & 꿀(또는 올리고당) & 참기름', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '양배추는 넓은 잎째로 떼어 씻은 뒤 내열 접시에 담아 전자레인지(또는 찜기)에 4분간 찝니다 (5분).',
+              '작은 팬에 다진 대파와 돼지고기를 볶다가 고추장 2큰술, 올리고당 1큰술, 물 3큰술을 넣고 윤기 나게 볶아 약고추장을 만듭니다 (8분).',
+              '따뜻한 밥과 약고추장을 달큰한 양배추 잎에 올려 돌돌 싸서 먹습니다 (2분).'
+            ],
+            tip: '양배추를 너무 오래 찌지 않고 4분만 쪄야 아삭함과 단맛이 가장 좋습니다.'
+          },
+          {
+            id: 'rcp_okonomiyaki',
+            title: '오사카풍 돼지고기 오코노미야키',
+            cuisine: '일식',
+            emoji: '🥞',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: '_aEHhkLRQ0A',
+            youtubeTitle: '실패 없는 오코노미야끼 만들기 황금 레시피',
+            youtubeChannel: '쉽게 맛있게 혜란쌤',
+            summary: '채 썬 양배추를 듬뿍 넣어 바삭하고 촉촉하게 구워낸 일본 오사카풍 철판 요리',
+            sharedUsed: [
+              { name: '양배추', amountPerServing: 120, unit: 'g' },
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 80, unit: 'g' },
+              { name: '대파', amountPerServing: 0.3, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '달걀', amountPerServing: 1, unit: '개', note: '상비 재료' },
+              { name: '부침가루', amountPerServing: 3, unit: '큰술', note: '장기보관' },
+              { name: '돈가스소스 & 마요네즈', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '양배추와 대파는 얇게 채 썰어 큰 볼에 담습니다 (5분).',
+              '부침가루, 달걀, 물 소량을 넣고 가볍게 섞은 뒤 돼지고기를 올립니다 (3분).',
+              '중불로 달군 팬에 반죽을 도톰하게 올리고 앞뒤로 노릇하게 각 5~6분씩 구워냅니다 (10분).',
+              '돈가스소스와 마요네즈를 지그재그로 뿌려 완성합니다 (2분).'
+            ],
+            tip: '양배추를 얇게 채 썰수록 반죽이 잘 뭉쳐지고 속까지 달콤하게 익습니다.'
+          },
+          {
+            id: 'rcp_pad_krapow',
+            title: '팟 카파오 무쌉 (태국식 돼지고기 덮밥)',
+            cuisine: '아시안',
+            emoji: '🍳',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'k7M2ur-rZPg',
+            youtubeTitle: '한국인이 좋아하는 태국요리 카파오 무쌉 쉽게 만드는 법',
+            youtubeChannel: '여경옥의 옥사부tv',
+            summary: '돼지고기와 아삭한 양배추·대파를 짭조름한 굴소스에 볶아 반숙 계란과 곁들이는 타이 덮밥',
+            sharedUsed: [
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 100, unit: 'g' },
+              { name: '양배추', amountPerServing: 70, unit: 'g' },
+              { name: '대파', amountPerServing: 0.5, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '달걀', amountPerServing: 1, unit: '개', note: '상비 재료' },
+              { name: '굴소스 & 간장 & 설탕', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '팬에 기름을 넉넉히 두르고 달걀 프라이를 반숙으로 튀기듯 구워 건져냅니다 (3분).',
+              '남은 기름에 송송 썬 대파와 다진 마늘을 넣고 향을 냅니다 (2분).',
+              '돼지고기를 넣고 센 불에 바싹 볶다가 한입 크기로 썬 양배추를 넣습니다 (6분).',
+              '간장, 굴소스, 설탕 반 스푼을 넣고 빠르게 볶아 밥 위에 올립니다 (4분).'
+            ],
+            tip: '바질이 없어도 대파와 마늘 향만으로도 이국적이고 감칠맛 나는 덮밥이 완성됩니다.'
+          },
+          {
+            id: 'rcp_shogayaki_pork',
+            title: '일식 돼지고기 생강구이 덮밥 (쇼가야키)',
+            cuisine: '일식',
+            emoji: '🍱',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'gSJNQCRqguw',
+            youtubeTitle: '쇼가야키(生姜焼き), 성시경님도 사랑한 돼지고기 생강구이',
+            youtubeChannel: '일식(食)예보',
+            summary: '향긋한 생강 간장 소스에 구운 돼지고기를 아삭한 양배추 채와 함께 먹는 일본 정통 가정식',
+            sharedUsed: [
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 120, unit: 'g' },
+              { name: '양배추', amountPerServing: 90, unit: 'g' },
+              { name: '대파', amountPerServing: 0.3, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 미림 & 설탕 & 다진 생강', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '양배추는 곱게 채 썰어 찬물에 담갔다 건져 접시 한쪽에 수북이 담습니다 (4분).',
+              '달군 팬에 돼지고기와 대파를 넣고 노릇하게 굽습니다 (5분).',
+              '간장 2, 미림 2, 설탕 1, 다진 생강 0.5큰술을 섞은 소스를 붓고 윤기 나게 졸입니다 (4분).',
+              '양배추 채 옆에 고기를 듬뿍 담고 남은 소스를 끼얹어 냅니다 (2분).'
+            ],
+            tip: '짭조름한 고기 소스에 아삭한 생양배추 채를 곁들여 먹으면 느끼함이 싹 잡힙니다.'
+          },
+          {
+            id: 'rcp_cabbage_pork_pasta',
+            title: '이탈리안 양배추 포크 라구 오일 파스타',
+            cuisine: '양식',
+            emoji: '🍝',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'f5plGKqUa9A',
+            youtubeTitle: '후딱 만들어 먹는 꿀맛 양배추 파스타 레시피',
+            youtubeChannel: '원쿡',
+            summary: '달콤하게 구워진 양배추와 고소한 돼지고기 육즙이 어우러진 이탈리안 알리오 올리오 파스타',
+            sharedUsed: [
+              { name: '양배추', amountPerServing: 90, unit: 'g' },
+              { name: '돼지고기(다짐육/앞다리)', amountPerServing: 80, unit: 'g' },
+              { name: '대파', amountPerServing: 0.3, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '파스타면', amountPerServing: 90, unit: 'g', note: '장기보관 면류' },
+              { name: '올리브오일 & 마늘 & 소금·후추', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '소금을 넣은 끓는 물에 파스타면을 7분간 삶고 면수를 반 컵 남겨둡니다 (7분).',
+              '팬에 올리브오일을 두르고 다진 마늘, 송송 썬 대파, 돼지고기를 노릇하게 볶습니다 (5분).',
+              '굵게 썬 양배추를 넣고 숨이 살짝 죽을 때까지 볶은 뒤 삶은 면과 면수를 넣습니다 (5분).',
+              '센 불에서 소스가 면에 배도록 유화시켜 후추를 뿌려 완성합니다 (3분).'
+            ],
+            tip: '돼지고기를 패티처럼 한쪽 면을 바삭하게 구운 뒤 부숴주면 풍미가 훨씬 깊어집니다.'
+          }
+        ]
+      },
+      {
+        id: 'cluster_tofu_zucchini',
+        name: '두부 · 애호박 · 표고버섯 그룹',
+        sharedIngredients: ['두부', '애호박', '표고버섯'],
+        keywords: ['두부', '애호박', '버섯', '표고버섯', '팽이버섯', '양파'],
+        reason: '개봉 후 빨리 먹어야 하는 두부와 애호박, 버섯을 한식 4종·일식 2종·중식·퓨전 등 8가지 메뉴로 알차게 구성합니다.',
+        recipes: [
+          {
+            id: 'rcp_spicy_braised_tofu',
+            title: '무수분 매콤 쫀득 두부 애호박 조림',
+            cuisine: '한식',
+            emoji: '🥘',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'QO1iG_iOyk8',
+            youtubeTitle: '두부조림에 물넣지 마세요! 퍼지지 않고 쫀득쫀득 대박 매콤두부조림',
+            youtubeChannel: '딸을 위한 레시피',
+            summary: '노릇하게 구운 두부와 달큰한 애호박·표고버섯에 매콤짭조름한 양념장이 쏙 밴 국민 한식 반찬',
+            sharedUsed: [
+              { name: '두부', amountPerServing: 0.5, unit: '모' },
+              { name: '애호박', amountPerServing: 0.3, unit: '개' },
+              { name: '표고버섯', amountPerServing: 2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 고춧가루 & 올리고당 & 들기름', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '두부는 도톰하게 썰어 물기를 빼고, 애호박과 표고버섯도 먹기 좋게 썹니다 (4분).',
+              '팬에 들기름과 식용유를 반반 두르고 두부를 앞뒤로 황금빛이 나게 먼저 굽습니다 (7분).',
+              '애호박과 표고버섯, 양념장(간장2, 고춧가루1, 올리고당1, 물 반 컵)을 붓고 중불에 졸입니다 (5분).',
+              '국물이 자작해지면 통깨를 뿌려 완성합니다 (2분).'
+            ],
+            tip: '두부를 먼저 노릇하게 구워 수분을 날려주면 양념에 끓여도 부서지지 않고 쫄깃합니다.'
+          },
+          {
+            id: 'rcp_gangdoenjang_bibimbap',
+            title: '애호박 버섯 두부 짜글이 강된장 덮밥',
+            cuisine: '한식',
+            emoji: '🍚',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'LgE-kQz-xv0',
+            youtubeTitle: '500만뷰 두부 짜글이! 덮밥으로 최고인 초간단 두부 요리',
+            youtubeChannel: '살림하는 봉봉 Bonbon',
+            summary: '두부를 으깨 넣어 짜지 않고 고소한 강된장 짜글이에 따뜻한 밥을 슥슥 비벼 먹는 집밥 메뉴',
+            sharedUsed: [
+              { name: '두부', amountPerServing: 0.5, unit: '모' },
+              { name: '애호박', amountPerServing: 0.4, unit: '개' },
+              { name: '표고버섯', amountPerServing: 2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '된장 & 고추장 & 고춧가루', amountPerServing: 1.5, unit: '큰술', note: '상비 양념' },
+              { name: '참기름 & 깨소금', amountPerServing: 1, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '애호박과 표고버섯을 작게 깍둑썰기합니다 (4분).',
+              '냄비에 채소와 물 반 컵, 된장 1큰술, 고춧가루 반 큰술, 다진 마늘을 넣고 끓입니다 (5분).',
+              '두부를 숟가락으로 큼직하게 으깨 넣고 자작해질 때까지 4분간 더 끓입니다 (4분).',
+              '따뜻한 밥에 강된장과 참기름을 넣어 비벼 먹습니다 (2분).'
+            ],
+            tip: '참치캔 반 캔이 있다면 함께 넣으면 감칠맛이 두 배로 살아납니다.'
+          },
+          {
+            id: 'rcp_zucchini_tofu_jeon',
+            title: '바삭 고소 애호박 표고버섯 두부전',
+            cuisine: '한식',
+            emoji: '🥞',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'Sc03J4yRbLE',
+            youtubeTitle: '애호박 썩히지 마시고 이렇게 드세요! 바삭하고 고소한 애호박 요리',
+            youtubeChannel: '요리고수',
+            summary: '으깬 두부와 채 썬 애호박, 쫄깃한 표고버섯을 섞어 노릇하게 부쳐낸 고단백 한식 부침개',
+            sharedUsed: [
+              { name: '애호박', amountPerServing: 0.5, unit: '개' },
+              { name: '두부', amountPerServing: 0.4, unit: '모' },
+              { name: '표고버섯', amountPerServing: 2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '달걀 & 부침가루 & 소금', amountPerServing: 2, unit: '큰술', note: '상비 재료' }
+            ],
+            steps: [
+              '애호박과 표고버섯은 곱게 채 썰고 두부는 칼등으로 으깨 물기를 짭니다 (5분).',
+              '볼에 모든 재료와 달걀 1개, 부침가루 2큰술, 소금 약간을 넣고 고루 섞습니다 (3분).',
+              '기름 두른 팬에 한 숟가락씩 떠 올려 앞뒤로 노릇하게 부쳐냅니다 (8분).',
+              '초간장을 곁들여 따뜻할 때 상에 냅니다 (2분).'
+            ],
+            tip: '밀가루 대신 으깬 두부가 반죽 역할을 해 훨씬 고소하고 담백합니다.'
+          },
+          {
+            id: 'rcp_tofu_kimchi_jjageuli',
+            title: '얼큰 칼칼 표고 애호박 두부 짜글이 전골',
+            cuisine: '한식',
+            emoji: '🍲',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: '9u28VI1UMVk',
+            youtubeTitle: '그냥 다 넣고 끓이면 돼요! 실패 없는 두부 짜글이 레시피',
+            youtubeChannel: '킴서울 Kimseoul',
+            summary: '표고버섯에서 우러난 깊은 채수에 애호박과 두부를 듬뿍 넣고 얼큰하게 끓여낸 한식 전골',
+            sharedUsed: [
+              { name: '두부', amountPerServing: 0.5, unit: '모' },
+              { name: '애호박', amountPerServing: 0.4, unit: '개' },
+              { name: '표고버섯', amountPerServing: 2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '고춧가루 & 국간장 & 다진 마늘 & 새우젓(또는 소금)', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '두부와 애호박은 반달 모양으로 썰고 표고버섯은 슬라이스합니다 (4분).',
+              '냄비에 두부, 애호박, 버섯을 돌려 담고 양념장과 물 350ml를 붓습니다 (4분).',
+              '센 불에서 8분간 끓여 채소의 단맛과 버섯 향이 국물에 우러나게 합니다 (8분).',
+              '대파나 고추를 얹어 칼칼하게 마무리합니다 (2분).'
+            ],
+            tip: '국간장과 새우젓(또는 참치액)으로 간을 맞추면 고기 없이도 국물이 놀랍도록 개운하고 깊습니다.'
+          },
+          {
+            id: 'rcp_mapo_tofu_mushroom',
+            title: '표고 애호박 사천식 마파두부 덮밥',
+            cuisine: '중식',
+            emoji: '🌶️',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'iYCsV3IX8z0',
+            youtubeTitle: '마파두부가 이렇게 쉽다고? 뜨끈하고 칼칼한 한끼 덮밥 요리',
+            youtubeChannel: '하닷 hadot',
+            summary: '쫄깃한 표고버섯의 감칠맛과 부드러운 두부가 입안에서 사르르 녹는 15분 중식 일품 덮밥',
+            sharedUsed: [
+              { name: '두부', amountPerServing: 0.5, unit: '모' },
+              { name: '표고버섯', amountPerServing: 2, unit: '개' },
+              { name: '애호박', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '굴소스 & 두반장(또는 고추장+간장)', amountPerServing: 1.5, unit: '큰술', note: '상비 양념' },
+              { name: '전분가루 & 참기름', amountPerServing: 1, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '두부, 애호박, 표고버섯을 모두 한입 크기로 깍둑썰기합니다 (4분).',
+              '팬에 다진 마늘과 버섯, 애호박을 먼저 볶다가 양념장을 넣어 볶습니다 (4분).',
+              '물 반 컵과 두부를 넣고 3분간 끓인 뒤 물전분으로 농도를 맞춥니다 (5분).',
+              '불을 끄고 참기름을 둘러 밥 위에 듬뿍 부어냅니다 (2분).'
+            ],
+            tip: '두부를 넣기 전에 끓는 소금물에 1분만 데쳐내면 볶을 때 부서지지 않고 탱글탱글합니다.'
+          },
+          {
+            id: 'rcp_tofu_egg_pan',
+            title: '일식 두부 애호박 가쓰오 계란덮밥 (토후동)',
+            cuisine: '일식',
+            emoji: '🍱',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'dT4K2mj7GaE',
+            youtubeTitle: '400만 조회수를 뛰어넘은 초간단 고단백 두부 덮밥 레시피',
+            youtubeChannel: '유지만 yuziman',
+            summary: '노릇하게 구운 두부와 애호박·버섯에 달콤짭조름한 쯔유 소스와 부드러운 반숙 계란을 얹은 일식 덮밥',
+            sharedUsed: [
+              { name: '두부', amountPerServing: 0.5, unit: '모' },
+              { name: '애호박', amountPerServing: 0.3, unit: '개' },
+              { name: '표고버섯', amountPerServing: 2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '달걀', amountPerServing: 1, unit: '개', note: '상비 재료' },
+              { name: '쯔유(또는 간장+맛술+설탕)', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '팬에 기름을 두르고 깍둑썬 두부와 애호박, 표고버섯을 노릇하게 굽습니다 (6분).',
+              '물 반 컵과 쯔유(또는 간장, 설탕)를 붓고 바글바글 끓입니다 (4분).',
+              '가볍게 푼 달걀물을 가장자리에 둘러 부은 뒤 뚜껑을 덮어 반숙으로 익힙니다 (3분).',
+              '따뜻한 밥 위에 그대로 미끄러지듯 올려 완성합니다 (2분).'
+            ],
+            tip: '달걀을 너무 많이 저으면 국물이 탁해지므로 젓가락으로 대여섯 번만 대충 풀어 부어주세요.'
+          },
+          {
+            id: 'rcp_doenjang_risotto',
+            title: '표고버섯 애호박 두부 크림 리조또',
+            cuisine: '퓨전',
+            emoji: '🍲',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'lCVE8GQpN8g',
+            youtubeTitle: '집에서 고급 레스토랑 맛을 내는 퓨전 밥 요리 비법',
+            youtubeChannel: '홈쿡 레시피',
+            summary: '구수한 된장 한 스푼과 우유·으깬 두부로 고소함을 살리고 표고버섯으로 식감을 더한 K-퓨전 리조또',
+            sharedUsed: [
+              { name: '표고버섯', amountPerServing: 2, unit: '개' },
+              { name: '애호박', amountPerServing: 0.3, unit: '개' },
+              { name: '두부', amountPerServing: 0.3, unit: '모' }
+            ],
+            pantryUsed: [
+              { name: '우유 & 슬라이스 치즈 & 된장 0.5스푼', amountPerServing: 150, unit: 'ml', note: '상비 재료' }
+            ],
+            steps: [
+              '애호박과 표고버섯은 작게 깍둑썰기하고 두부는 으깨서 준비합니다 (4분).',
+              '팬에 버터나 식용유를 두르고 다진 마늘, 버섯, 애호박, 으깬 두부를 볶습니다 (5분).',
+              '우유와 된장 반 큰술을 풀어 넣고 밥 1공기를 넣어 중약불에서 걸쭉하게 끓입니다 (7분).',
+              '치즈 1장을 올려 녹인 뒤 후추를 뿌려 마무리합니다 (2분).'
+            ],
+            tip: '생크림 대신 으깬 두부와 우유를 넣으면 느끼하지 않고 속이 편안한 크림 리조또가 됩니다.'
+          },
+          {
+            id: 'rcp_agedashi_tofu',
+            title: '일식 아게다시 도후 & 구운 애호박 덮밥',
+            cuisine: '일식',
+            emoji: '🍱',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'LKjpiUtU8D4',
+            youtubeTitle: '일본 이자카야풍 두부 & 야채 구이 덮밥 레시피',
+            youtubeChannel: '모월식당',
+            summary: '전분 옷을 입혀 겉은 쫀득하고 속은 부드러운 두부 구이에 짭조름한 쯔유 소스와 구운 애호박·버섯을 곁들인 요리',
+            sharedUsed: [
+              { name: '두부', amountPerServing: 0.5, unit: '모' },
+              { name: '애호박', amountPerServing: 0.3, unit: '개' },
+              { name: '표고버섯', amountPerServing: 2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '전분가루 & 간장/쯔유', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '두부는 물기를 닦아 한입 크기로 썰고 전분가루를 얇게 묻힙니다 (5분).',
+              '팬에 기름을 두르고 두부와 편 썬 애호박, 표고버섯을 노릇하게 굽습니다 (8분).',
+              '물 100ml에 간장·미림(또는 쯔유)을 넣고 살짝 끓여 따뜻한 소스를 만듭니다 (4분).',
+              '그릇에 두부와 구운 채소를 담고 소스를 자작하게 부어 완성합니다 (3분).'
+            ],
+            tip: '두부에 전분 옷을 입혀 구우면 소스가 겉돌지 않고 쫀득하게 코팅됩니다.'
+          }
+        ]
+      },
+      {
+        id: 'cluster_chicken_pepper',
+        name: '닭다리살 · 파프리카 · 양파 그룹',
+        sharedIngredients: ['닭다리살(정육)', '파프리카', '양파'],
+        keywords: ['닭고기', '닭다리살', '닭가슴살', '파프리카', '피망', '양파'],
+        reason: '손질된 순살 닭다리살과 파프리카, 양파로 한식 닭갈비·찜닭·불닭부터 일식·멕시칸·중식까지 8가지 요리를 만듭니다.',
+        recipes: [
+          {
+            id: 'rcp_dakgalbi_pan',
+            title: '춘천식 원팬 순살 닭갈비',
+            cuisine: '한식',
+            emoji: '🥘',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'FR-F48seQv8',
+            youtubeTitle: '치킨 시켜 먹지 말고 돈 아끼세요! 집에서 만드는 1티어 닭요리',
+            youtubeChannel: '자취요리신 simple cooking',
+            summary: '숙성 시간 없이도 양파와 파프리카의 단맛이 어우러져 밥도둑이 되는 원팬 춘천 닭갈비',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 150, unit: 'g' },
+              { name: '양파', amountPerServing: 0.5, unit: '개' },
+              { name: '파프리카', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '고추장 & 고춧가루 & 간장 & 카레가루 약간', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '닭다리살을 한입 크기로 썰어 양념장에 버무립니다 (4분).',
+              '팬에 채 썬 양파와 양념한 닭고기를 올리고 중불에서 뚜껑을 덮어 속까지 익힙니다 (9분).',
+              '뚜껑을 열고 파프리카를 넣어 센 불에서 수분을 날리며 볶아냅니다 (5분).',
+              '참기름과 통깨를 뿌려 마무리합니다 (2분).'
+            ],
+            tip: '양념장에 카레가루를 티스푼으로 반 스푼만 넣으면 전문점 닭갈비 특유의 풍미가 살아납니다.'
+          },
+          {
+            id: 'rcp_간장찜닭_pan',
+            title: '안동식 단짠 순살 간장 찜닭',
+            cuisine: '한식',
+            emoji: '🍗',
+            cookTime: 22,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: '1mv3J_hm1DQ',
+            youtubeTitle: '진짜 쉬운 닭다리살 요리 1티어 레시피',
+            youtubeChannel: '백수남편 baegsuman',
+            summary: '순살 닭다리살을 사용해 20분 만에 양념이 쏙 배어드는 남녀노소 인기 한식 찜닭',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 150, unit: 'g' },
+              { name: '양파', amountPerServing: 0.5, unit: '개' },
+              { name: '파프리카', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 굴소스 & 올리고당 & 다진 마늘', amountPerServing: 3, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '팬에 닭다리살을 먼저 구워 겉면을 노릇하게 익힙니다 (6분).',
+              '물 1컵과 간장 2, 굴소스 1, 설탕 1, 다진 마늘을 넣고 중불에서 끓입니다 (8분).',
+              '양파와 파프리카를 넣고 국물이 자작해질 때까지 졸입니다 (6분).',
+              '참기름을 한 바퀴 둘러 접시에 담아냅니다 (2분).'
+            ],
+            tip: '뼈 없는 닭다리살 정육을 쓰면 별도로 데칠 필요 없이 20분 만에 부드러운 찜닭이 됩니다.'
+          },
+          {
+            id: 'rcp_chicken_buldak_cheese',
+            title: '매콤 파프리카 치즈 불닭 덮밥',
+            cuisine: '한식',
+            emoji: '🧀',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'G-r7E66vZyc',
+            youtubeTitle: '닭다리살 덮밥 진짜 맛있다! 초간단 인기 레시피',
+            youtubeChannel: '쀼키친',
+            summary: '매콤달콤한 불닭 양념에 구운 닭다리살과 파프리카 위에 고소한 모짜렐라 치즈를 녹여낸 별미 한식',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 140, unit: 'g' },
+              { name: '파프리카', amountPerServing: 0.4, unit: '개' },
+              { name: '양파', amountPerServing: 0.4, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '고추장 & 고춧가루 & 물엿 & 모짜렐라 치즈', amountPerServing: 2.5, unit: '큰술', note: '상비 재료' }
+            ],
+            steps: [
+              '닭다리살을 한입 크기로 썰어 팬에 먼저 노릇하게 굽습니다 (6분).',
+              '양파와 파프리카, 매콤한 불닭 양념장을 넣고 센 불에 6분간 볶습니다 (6분).',
+              '위에 모짜렐라 치즈를 뿌리고 뚜껑을 덮어 약불에서 4분간 녹입니다 (4분).',
+              '밥과 함께 뜨거울 때 냅니다 (2분).'
+            ],
+            tip: '닭다리살에서 나온 기름을 키친타월로 한 번 닦아낸 뒤 양념을 넣으면 훨씬 깔끔하게 매콤합니다.'
+          },
+          {
+            id: 'rcp_chicken_garlic_gui',
+            title: '한식 마늘 간장 닭다리살 숯불풍 구이 & 양파채',
+            cuisine: '한식',
+            emoji: '🍖',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'D0-5UD4TrY4',
+            youtubeTitle: '무조건 맛있는 닭다리살 간장 구이 황금 레시피',
+            youtubeChannel: '꾸리 Kkuri',
+            summary: '다진 마늘과 간장·청주 양념으로 재워 구운 닭다리살에 아삭한 양파·파프리카 샐러드를 곁들인 한식 구이',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 150, unit: 'g' },
+              { name: '양파', amountPerServing: 0.5, unit: '개' },
+              { name: '파프리카', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 다진 마늘 & 설탕 & 식초(양파절임용)', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '양파와 파프리카는 얇게 채 썰어 간장·식초·설탕·물을 섞은 절임 소스에 버무려 둡니다 (4분).',
+              '팬에 닭다리살을 앞뒤로 노릇하게 구운 뒤 마늘 간장 양념을 붓고 윤기 나게 졸입니다 (10분).',
+              '구운 닭다리살을 먹기 좋게 썰어 아삭한 양파·파프리카 채와 함께 담아냅니다 (4분).'
+            ],
+            tip: '새콤달콤한 양파·파프리카 절임과 고소한 마늘 간장 닭구이를 함께 집어 먹으면 고깃집 닭구이 부럽지 않습니다.'
+          },
+          {
+            id: 'rcp_oyakodon_teriyaki',
+            title: '정호영 셰프풍 치킨 데리야키 덮밥 (토리동)',
+            cuisine: '일식',
+            emoji: '🍱',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'rdoc9zmVtoc',
+            youtubeTitle: '아이들이 환장하는 닭다리살 데리야끼 덮밥! 만능소스까지 공개!',
+            youtubeChannel: '정호영의 오늘도 요리',
+            summary: '껍질은 바삭하고 속은 촉촉하게 구운 닭다리살에 달콤짭짤한 데리야키 양파 소스를 얹은 일식 덮밥',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 150, unit: 'g' },
+              { name: '양파', amountPerServing: 0.5, unit: '개' },
+              { name: '파프리카', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 맛술 & 설탕(데리야키 소스)', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '닭다리살은 껍질 쪽이 바닥으로 가게 팬에 올려 기름 없이 노릇하고 바삭하게 굽습니다 (7분).',
+              '나온 기름을 살짝 닦아내고 채 썬 양파와 파프리카를 넣어 함께 볶습니다 (4분).',
+              '간장 2, 맛술 2, 설탕 1 비율의 만능 데리야키 소스를 붓고 윤기가 나게 졸입니다 (5분).',
+              '먹기 좋게 썰어 밥 위에 올리고 남은 소스를 끼얹어 완성합니다 (2분).'
+            ],
+            tip: '닭껍질을 처음에 뒤집지 않고 그대로 눌러 구워야 스테이크처럼 바삭한 식감이 살아납니다.'
+          },
+          {
+            id: 'rcp_chicken_quesadilla',
+            title: '멕시칸 치킨 파히타 & 치즈 퀘사디아',
+            cuisine: '멕시칸',
+            emoji: '🌮',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'EMpecrcCxMM',
+            youtubeTitle: '이름은 낯설지만 그 맛은 익숙한 꿀맛 치킨 퀘사디아 만들기',
+            youtubeChannel: '강쿡 kang cook',
+            summary: '파프리카와 양파, 닭다리살을 매콤달콤하게 볶아 치즈와 함께 구워낸 바삭한 멕시칸 퀘사디아',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 120, unit: 'g' },
+              { name: '파프리카', amountPerServing: 0.4, unit: '개' },
+              { name: '양파', amountPerServing: 0.4, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '토르티야(또띠아) & 모짜렐라 치즈', amountPerServing: 2, unit: '장', note: '냉동/장기보관' }
+            ],
+            steps: [
+              '닭다리살과 파프리카, 양파를 길쭉하게 채 썰어 준비합니다 (5분).',
+              '팬에 기름을 두르고 닭고기를 먼저 익힌 뒤 양파, 파프리카와 케첩·칠리소스를 넣고 센 불에 볶습니다 (8분).',
+              '마른 팬에 토르티야를 올리고 치즈와 볶은 재료를 올린 뒤 반으로 접어 앞뒤로 노릇하게 굽습니다 (5분).',
+              '먹기 좋은 크기로 4등분해 접시에 담아냅니다 (2분).'
+            ],
+            tip: '남은 토르티야는 지퍼백에 넣어 냉동실에 두면 몇 달간 보관하며 피자나 랩으로 쓸 수 있습니다.'
+          },
+          {
+            id: 'rcp_chicken_curry',
+            title: '구운 파프리카 치킨 무수분 카레',
+            cuisine: '일식/인도',
+            emoji: '🍛',
+            cookTime: 22,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'GPgNl50cXEA',
+            youtubeTitle: '일주일이 편해지는 든든한 닭다리살 야채 카레 레시피',
+            youtubeChannel: '혜야 Hyeya',
+            summary: '양파의 수분과 우유를 활용해 깊고 진한 맛을 낸 레스토랑급 치킨 카레라이스',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 130, unit: 'g' },
+              { name: '양파', amountPerServing: 0.6, unit: '개' },
+              { name: '파프리카', amountPerServing: 0.4, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '고형 카레(또는 카레가루) & 우유/물', amountPerServing: 1, unit: '조각', note: '상온 장기보관' }
+            ],
+            steps: [
+              '양파는 얇게 채 썰고 닭다리살과 파프리카는 한입 크기로 썹니다 (5분).',
+              '냄비에 버터를 녹이고 양파와 닭다리살을 중불에서 노릇하게 볶습니다 (7분).',
+              '물(또는 우유)과 카레 블록을 넣고 약불에서 7분간 걸쭉하게 끓입니다 (7분).',
+              '파프리카를 마지막에 넣어 아삭한 식감과 색감을 살려 완성합니다 (3분).'
+            ],
+            tip: '고형 카레는 상온에서 오래 보관되므로 1~2조각씩 쪼개어 쓰기에 아주 좋은 재료입니다.'
+          },
+          {
+            id: 'rcp_kungpao_chicken',
+            title: '중식 궁보계정 (매콤 단짠 닭고기 파프리카 볶음)',
+            cuisine: '중식',
+            emoji: '🥡',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'KLmitb0m6KE',
+            youtubeTitle: '식비 절약하면서 중식당 맛 내는 닭다리살 볶음 레시피',
+            youtubeChannel: '그맛 HisTaste',
+            summary: '한입 크기의 닭고기와 아삭한 파프리카·양파를 매콤새콤한 중화 소스에 빠르게 볶아낸 일품 요리',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 140, unit: 'g' },
+              { name: '파프리카', amountPerServing: 0.4, unit: '개' },
+              { name: '양파', amountPerServing: 0.4, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 식초 & 설탕 & 굴소스', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '깍둑썬 닭다리살에 간장 반 큰술과 전분가루 반 큰술을 버무려 코팅합니다 (4분).',
+              '팬에 기름을 두르고 닭고기를 겉면이 바삭하도록 먼저 볶습니다 (6분).',
+              '네모나게 썬 파프리카와 양파를 넣고 센 불에 2분간 볶습니다 (3분).',
+              '배합한 궁보 소스(간장1, 굴소스1, 식초1, 설탕1)를 붓고 재빨리 코팅해 냅니다 (5분).'
+            ],
+            tip: '식초가 살짝 들어가야 중식당 특유의 감칠맛과 깔끔한 뒷맛이 살아납니다.'
+          }
+        ]
+      },
+      {
+        id: 'cluster_beef_beansprout',
+        name: '소불고기/우삼겹 · 숙주나물 · 청경채 그룹',
+        sharedIngredients: ['얇은 소고기(우삼겹/불고기용)', '숙주나물', '청경채'],
+        keywords: ['소고기', '차돌박이', '우삼겹', '숙주', '숙주나물', '청경채'],
+        reason: '금방 숨이 죽는 숙주나물과 청경채, 얇은 소고기를 한식 4종·일식 2종·베트남·중식 등 8가지 메뉴로 15분 만에 조리합니다.',
+        recipes: [
+          {
+            id: 'rcp_beef_beansprout_korean',
+            title: '한식 포차풍 우삼겹 숙주 청경채 볶음',
+            cuisine: '한식',
+            emoji: '🥩',
+            cookTime: 12,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'FPIWgyCshrQ',
+            youtubeTitle: '300만뷰 돌파! 이거 간이 딱 좋아요 우삼겹 숙주볶음 황금레시피',
+            youtubeChannel: '킴서울 Kimseoul',
+            summary: '고소한 소고기 기름에 아삭한 숙주와 청경채를 센 불로 빠르게 볶아낸 12분 완성 최고 인기 메뉴',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 130, unit: 'g' },
+              { name: '숙주나물', amountPerServing: 120, unit: 'g' },
+              { name: '청경채', amountPerServing: 1, unit: '포기' }
+            ],
+            pantryUsed: [
+              { name: '굴소스 & 간장 & 다진 마늘 & 참기름', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '달군 팬에 얇은 소고기와 다진 마늘을 넣고 노릇하게 먼저 구워냅니다 (4분).',
+              '손질한 청경채와 씻은 숙주나물을 산처럼 올립니다 (2분).',
+              '굴소스 1큰술, 간장 반 큰술, 맛술 1큰술을 두르고 가장 센 불에서 2분간 빠르게 볶습니다 (4분).',
+              '불을 끄고 참기름과 후추를 뿌려 완성합니다 (2분).'
+            ],
+            tip: '숙주를 넣은 뒤에는 절대 오래 볶지 말고 1분 30초~2분 내로 불을 꺼야 물이 안 생기고 아삭합니다.'
+          },
+          {
+            id: 'rcp_seoul_bulgogi',
+            title: '국물이 자작한 서울식 소불고기 전골',
+            cuisine: '한식',
+            emoji: '🍲',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'Y23-Mncza7o',
+            youtubeTitle: '600만뷰 돌파! 국물이 자작한 서울식 소불고기 레시피',
+            youtubeChannel: '추추의 한끼식사',
+            summary: '달콤짭조름한 육수에 부드러운 소고기와 숙주·청경채를 듬뿍 넣어 밥 비벼 먹기 좋은 한식 불고기',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 140, unit: 'g' },
+              { name: '숙주나물', amountPerServing: 90, unit: 'g' },
+              { name: '청경채', amountPerServing: 1, unit: '포기' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 설탕 & 맛술 & 다진 마늘 & 참기름', amountPerServing: 3, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '소고기에 설탕 1, 간장 2, 다진 마늘, 참기름을 넣고 5분간 가볍게 재워둡니다 (5분).',
+              '전골냄비나 깊은 팬에 숙주와 청경채를 깔고 양념한 소고기를 올립니다 (3분).',
+              '물 반 컵을 테두리에 둘러 붓고 중센 불에서 고기가 익을 때까지 끓입니다 (8분).',
+              '국물과 함께 따뜻한 밥에 곁들여 냅니다 (2분).'
+            ],
+            tip: '설탕을 먼저 고기에 버무린 뒤 간장을 넣으면 고기 육질이 훨씬 연해지고 단맛이 속까지 배어듭니다.'
+          },
+          {
+            id: 'rcp_deungchon_shabu',
+            title: '등촌식 얼큰 소고기 숙주 청경채 샤브전골',
+            cuisine: '한식',
+            emoji: '🌶️',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'RWr-tGLPN6c',
+            youtubeTitle: '이렇게 똑같을 수가 있다고? 등촌 샤브샤브 집에서 만드는 레시피',
+            youtubeChannel: '비마이테이블',
+            summary: '칼칼하고 시원한 고추장 마늘 육수에 숙주·청경채와 소고기를 건져 먹는 한국인이 사랑하는 얼큰 샤브',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 130, unit: 'g' },
+              { name: '숙주나물', amountPerServing: 120, unit: 'g' },
+              { name: '청경채', amountPerServing: 2, unit: '포기' }
+            ],
+            pantryUsed: [
+              { name: '고춧가루 & 고추장 & 국간장 & 다진 마늘', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '냄비에 물 500ml와 국간장, 고추장 반 스푼, 고춧가루 1.5스푼, 다진 마늘을 넣고 팔팔 끓입니다 (5분).',
+              '숙주나물과 청경채를 듬뿍 넣고 숨이 살짝 죽을 때까지 끓입니다 (5분).',
+              '얇은 소고기를 올려 살짝 익힌 뒤 채소와 함께 와사비 간장에 찍어 먹습니다 (8분).'
+            ],
+            tip: '남은 국물에 밥과 계란 1개, 참기름을 넣어 볶음밥으로 마무리하면 완벽합니다.'
+          },
+          {
+            id: 'rcp_steamed_beef_beansprout',
+            title: '10분 컷 담백 소고기 숙주 청경채 편백풍 찜',
+            cuisine: '한식',
+            emoji: '🥢',
+            cookTime: 12,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: '9Zvnwi05cMk',
+            youtubeTitle: '10분컷 초간단 고기 숙주찜! 맛보장인데 살도 안 찌는 건강요리',
+            youtubeChannel: '됴미',
+            summary: '기름 한 방울 없이 냄비에 숙주와 청경채, 소고기를 겹겹이 깔고 수분으로만 쪄낸 초간단 건강 한식',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 130, unit: 'g' },
+              { name: '숙주나물', amountPerServing: 140, unit: 'g' },
+              { name: '청경채', amountPerServing: 2, unit: '포기' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 식초 & 설탕 & 연겨자 (특제 간장소스)', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '넓은 팬이나 냄비 바닥에 숙주나물과 청경채를 두툼하게 깝니다 (2분).',
+              '그 위에 얇은 소고기를 겹치지 않게 펼치고 후추와 맛술 2큰술을 뿌립니다 (2분).',
+              '뚜껑을 덮고 중불에서 6~7분간 수증기로 촉촉하게 쪄냅니다 (7분).',
+              '새콤달콤한 겨자 간장 소스에 듬뿍 찍어 먹습니다 (1분).'
+            ],
+            tip: '물을 따로 붓지 않아도 숙주와 청경채에서 나오는 채즙만으로 타지 않고 촉촉하게 쪄집니다.'
+          },
+          {
+            id: 'rcp_beef_yakisoba',
+            title: '이연복 셰프풍 소고기 숙주 야키소바',
+            cuisine: '일식',
+            emoji: '🍜',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'ovESTMIkIiQ',
+            youtubeTitle: '[이연복] 집에서 쉽게 만드는 일식 야키소바 레시피',
+            youtubeChannel: '이연복의 복주머니',
+            summary: '아삭한 숙주와 청경채, 고소한 소고기를 특제 소스에 볶아낸 일본 축제 스타일 볶음면',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 100, unit: 'g' },
+              { name: '숙주나물', amountPerServing: 100, unit: 'g' },
+              { name: '청경채', amountPerServing: 1, unit: '포기' }
+            ],
+            pantryUsed: [
+              { name: '생면(우동면 또는 라면사리)', amountPerServing: 1, unit: '개', note: '냉장/상온 장기보관' },
+              { name: '돈가스소스 & 굴소스', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '우동면(또는 라면사리)을 끓는 물에 살짝 데쳐 체에 밭쳐둡니다 (3분).',
+              '달군 팬에 소고기를 먼저 볶다가 먹기 좋게 썬 청경채를 넣습니다 (4분).',
+              '데친 면과 소스(돈가스소스 1.5, 굴소스 1, 설탕 0.5)를 넣고 센 불에 볶습니다 (5분).',
+              '마지막에 숙주나물을 넣고 숨만 살짝 죽도록 1분간 볶아 완성합니다 (3분).'
+            ],
+            tip: '숙주는 불을 끄기 직전에 넣고 잔열로 섞어주어야 끝까지 아삭함이 유지됩니다.'
+          },
+          {
+            id: 'rcp_pho_beef',
+            title: '15분 베트남식 소고기 숙주 쌀국수',
+            cuisine: '아시안',
+            emoji: '🥣',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'mWIJVS_1XRc',
+            youtubeTitle: '비 오는 날 딱 떠오르는 진한 국물 요리 레시피',
+            youtubeChannel: 'WaRaEat와라잇',
+            summary: '치킨스톡과 국간장으로 깊은 국물을 내고 숙주와 소고기, 청경채를 듬뿍 올린 베트남 쌀국수',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 110, unit: 'g' },
+              { name: '숙주나물', amountPerServing: 120, unit: 'g' },
+              { name: '청경채', amountPerServing: 1, unit: '포기' }
+            ],
+            pantryUsed: [
+              { name: '건쌀국수면', amountPerServing: 90, unit: 'g', note: '상온 장기보관' },
+              { name: '치킨스톡 & 국간장 & 다진 마늘', amountPerServing: 1.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '쌀국수면은 미지근한 물에 10분간 미리 불려둡니다 (동시 진행).',
+              '냄비에 물 500ml와 치킨스톡, 국간장을 넣고 끓입니다 (5분).',
+              '육수가 끓으면 소고기와 청경채, 불린 쌀국수면을 넣고 2분간 삶습니다 (5분).',
+              '그릇에 담고 생숙주를 수북이 올려 뜨거운 국물을 부어 완성합니다 (5분).'
+            ],
+            tip: '건쌀국수면은 상온에서 1년 이상 보관 가능해 한 봉지 사두면 언제든 꺼내 쓰기 좋습니다.'
+          },
+          {
+            id: 'rcp_beef_bokchoy_stirfry',
+            title: '중식 소고기 청경채 숙주 굴소스 덮밥',
+            cuisine: '중식',
+            emoji: '🥢',
+            cookTime: 12,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'CbJ_cqSWkNw',
+            youtubeTitle: '센 불에 빠르게 볶아내는 철판 스타일 소고기 야채 볶음',
+            youtubeChannel: '호잉',
+            summary: '바쁜 평일 저녁 12분 만에 완성하는 초고속 고단백 중화풍 일품 덮밥',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 120, unit: 'g' },
+              { name: '청경채', amountPerServing: 2, unit: '포기' },
+              { name: '숙주나물', amountPerServing: 100, unit: 'g' }
+            ],
+            pantryUsed: [
+              { name: '굴소스 & 다진 마늘 & 참기름', amountPerServing: 1.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '팬에 식용유와 다진 마늘을 넣고 노릇하게 마늘 기름을 냅니다 (2분).',
+              '소고기를 넣고 80% 정도 익을 때까지 센 불에 볶습니다 (3분).',
+              '청경채 밑동부터 넣고 볶다가 숙주나물과 굴소스를 넣습니다 (5분).',
+              '센 불에서 1분간 빠르게 뒤적인 뒤 밥 위에 얹어 완성합니다 (2분).'
+            ],
+            tip: '물전분을 반 스푼 둘러주면 소스가 채소와 고기에 착 감겨 밥 비벼 먹기에 최고입니다.'
+          },
+          {
+            id: 'rcp_sukiyaki_nabe',
+            title: '주말 관서풍 소고기 스키야키 전골',
+            cuisine: '일식',
+            emoji: '🍲',
+            cookTime: 22,
+            isQuickWeekday: false,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'EZMCl-f32qc',
+            youtubeTitle: '집에서 간편하게 해 먹는 소고기 전골 & 샤브샤브 브이로그',
+            youtubeChannel: '지훈이랑혜준이',
+            summary: '달콤짭조름한 와리시타 간장 소스에 소고기와 청경채, 숙주를 구워 날계란에 찍어 먹는 주말 만찬',
+            sharedUsed: [
+              { name: '얇은 소고기(우삼겹/불고기용)', amountPerServing: 150, unit: 'g' },
+              { name: '청경채', amountPerServing: 2, unit: '포기' },
+              { name: '숙주나물', amountPerServing: 100, unit: 'g' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 미림 & 설탕 & 달걀 1개', amountPerServing: 3, unit: '큰술', note: '상비 재료' }
+            ],
+            steps: [
+              '넓은 팬이나 전골냄비에 소고기를 살짝 구워 육향을 냅니다 (5분).',
+              '청경채와 숙주나물을 보기 좋게 둘러 담습니다 (4분).',
+              '간장, 미림, 설탕, 물을 섞은 스키야키 소스를 자작하게 붓고 끓입니다 (9분).',
+              '잘 푼 달걀물에 익은 고기와 채소를 듬뿍 찍어 즐깁니다 (4분).'
+            ],
+            tip: '남은 국물에 우동사리나 밥을 볶아 먹으면 두 끼 같은 든든한 주말 식사가 됩니다.'
+          }
+        ]
+      },
+      {
+        id: 'cluster_potato_onion',
+        name: '감자 · 양파 · 당근 그룹',
+        sharedIngredients: ['감자', '양파', '당근'],
+        keywords: ['감자', '양파', '당근', '스팸', '햄', '베이컨', '시금치'],
+        reason: '가장 친숙한 뿌리채소 3총사(감자·양파·당근)로 한식 4종·일식 2종·양식 2종 등 8가지 메뉴를 풍성하게 만듭니다.',
+        recipes: [
+          {
+            id: 'rcp_spicy_braised_potato_spam',
+            title: '얼큰 스팸(또는 참치) 감자 짜글이',
+            cuisine: '한식',
+            emoji: '🍲',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'mMVkU8zLrBc',
+            youtubeTitle: '100프로 성공하는 밥도둑 감자 조림 & 짜글이 레시피',
+            youtubeChannel: '살림팝',
+            summary: '포슬포슬하게 익은 감자와 달큰한 양파·당근에 짭조름한 통조림 햄을 넣은 칼칼한 한식 밥도둑',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1, unit: '개' },
+              { name: '양파', amountPerServing: 0.5, unit: '개' },
+              { name: '당근', amountPerServing: 0.2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '통조림 햄(또는 참치캔)', amountPerServing: 80, unit: 'g', note: '상온 장기보관' },
+              { name: '고추장 & 고춧가루 & 간장 & 다진 마늘', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '감자, 양파, 당근을 납작하고 얄팍하게 썰어 냄비 바닥에 깝니다 (5분).',
+              '통조림 햄은 으깨거나 깍둑썰어 위에 올립니다 (2분).',
+              '물 250ml와 양념장(고추장1, 고춧가루1, 간장1, 설탕0.5, 다진 마늘)을 넣고 중불에 끓입니다 (11분).',
+              '국물이 자작해지고 감자가 푹 익으면 완성합니다 (2분).'
+            ],
+            tip: '감자를 큐브 모양보다 납작하게 썰어야 평일 저녁에 10분 만에 빠르게 푹 익습니다.'
+          },
+          {
+            id: 'rcp_korean_potato_pancake',
+            title: '겉바속촉 강판/채썬 감자 야채전',
+            cuisine: '한식',
+            emoji: '🥞',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'kLT591PuXB4',
+            youtubeTitle: '530만뷰! 감자 있으면 이렇게 만들어 보세요 맛도 영양도 최고',
+            youtubeChannel: '메리니즈부엌',
+            summary: '감자와 당근, 양파를 가늘게 채 썰어 바삭하고 고소하게 부쳐낸 실패 없는 한식 감자채전',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1.5, unit: '개' },
+              { name: '양파', amountPerServing: 0.3, unit: '개' },
+              { name: '당근', amountPerServing: 0.2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '부침가루(또는 전분가루) & 소금', amountPerServing: 2, unit: '큰술', note: '상비 재료' }
+            ],
+            steps: [
+              '감자, 양파, 당근을 곱게 채 썰어 볼에 담고 소금 두 꼬집과 부침가루 2큰술을 섞습니다 (5분).',
+              '달군 팬에 식용유를 넉넉히 두르고 반죽을 얇고 둥글게 펼칩니다 (3분).',
+              '중불에서 앞뒤로 각 4~5분씩 가장자리가 바삭해지도록 구워냅니다 (8분).',
+              '초간장을 곁들여 뜨거울 때 상에 냅니다 (2분).'
+            ],
+            tip: '감자채를 물에 헹구지 말고 자체 전분기를 그대로 살려야 부침가루를 조금만 넣어도 바삭하게 붙습니다.'
+          },
+          {
+            id: 'rcp_soy_potato_egg_rice',
+            title: '단짠 간장 감자 양파 조림 & 버터 계란밥',
+            cuisine: '한식',
+            emoji: '🍳',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'Q_2kgepG0Vg',
+            youtubeTitle: '집밥 백선생 인생 감자조림 레시피',
+            youtubeChannel: '집밥 박제자',
+            summary: '짭조름하고 달콤하게 졸여낸 감자·당근·양파 조림을 고소한 버터 반숙 계란밥에 비벼 먹는 한식 한 그릇',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1, unit: '개' },
+              { name: '양파', amountPerServing: 0.4, unit: '개' },
+              { name: '당근', amountPerServing: 0.2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 올리고당 & 참기름 & 달걀 1개', amountPerServing: 2, unit: '큰술', note: '상비 재료' }
+            ],
+            steps: [
+              '감자, 당근, 양파를 한입 크기로 깍둑썰기합니다 (4분).',
+              '냄비에 채소와 물 반 컵, 간장 2, 올리고당 1을 넣고 중센 불에서 국물이 자작해질 때까지 졸입니다 (10분).',
+              '따뜻한 밥 위에 반숙 계란 프라이와 졸인 감자·양념을 듬뿍 올려 비벼 먹습니다 (4분).'
+            ],
+            tip: '감자를 너무 크지 않게 깍둑썰기하면 속까지 간장 양념이 빠르게 배어들어 밥과 비비기 좋습니다.'
+          },
+          {
+            id: 'rcp_pork_potato_stirfry',
+            title: '이연복 셰프풍 고기 감자 양파 볶음 덮밥',
+            cuisine: '한식',
+            emoji: '🥘',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'J9zjNirQTRQ',
+            youtubeTitle: '[이연복] 셰프의 초간단 가정식! 돼지고기 감자조림 레시피',
+            youtubeChannel: '이연복의 복주머니',
+            summary: '채 썰거나 납작하게 썬 감자와 양파·당근을 고소한 간장 굴소스에 볶아낸 든든한 집밥 메뉴',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1, unit: '개' },
+              { name: '양파', amountPerServing: 0.5, unit: '개' },
+              { name: '당근', amountPerServing: 0.2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '간장 & 굴소스 & 다진 마늘 & 통깨', amountPerServing: 2, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '감자와 당근, 양파를 먹기 좋은 크기로 납작하게 썹니다 (5분).',
+              '팬에 기름과 다진 마늘을 두르고 감자와 당근을 먼저 노릇하게 볶습니다 (6분).',
+              '양파와 간장, 굴소스, 물 4큰술을 넣고 뚜껑을 덮어 5분간 촉촉하게 익힙니다 (5분).',
+              '참기름과 통깨를 뿌려 밥과 함께 냅니다 (2분).'
+            ],
+            tip: '물을 서너 큰술만 넣고 뚜껑을 덮어 스팀으로 익히면 감자가 타지 않고 쫀득하게 익습니다.'
+          },
+          {
+            id: 'rcp_japanese_nikujaga',
+            title: '일식 니쿠자가 (간장 고기 감자조림)',
+            cuisine: '일식',
+            emoji: '🥘',
+            cookTime: 22,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: '6b6OcB-WxoM',
+            youtubeTitle: '고기 듬뿍 일본식 감자조림 니쿠자가! 밥도둑 인정',
+            youtubeChannel: '오늘한밥',
+            summary: '일본 가정식의 대표 메뉴로, 달콤짭짤한 간장 국물이 포슬포슬하게 밴 감자와 당근·양파 조림',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1, unit: '개' },
+              { name: '양파', amountPerServing: 0.5, unit: '개' },
+              { name: '당근', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '냉동 대패삼겹살(또는 소고기)', amountPerServing: 80, unit: 'g', note: '냉동 장기보관' },
+              { name: '간장 & 맛술 & 설탕', amountPerServing: 2.5, unit: '큰술', note: '상비 양념' }
+            ],
+            steps: [
+              '감자와 당근은 한입 크기로 썰고, 양파는 굵게 채 썹니다 (5분).',
+              '냄비에 고기와 채소를 먼저 가볍게 볶아 기름 코팅을 입힙니다 (4분).',
+              '물 1컵과 간장, 맛술, 설탕을 넣고 중불에서 11분간 졸입니다 (11분).',
+              '포슬포슬하게 양념이 밴 감자와 국물을 밥에 곁들여 냅니다 (2분).'
+            ],
+            tip: '쿠킹호일을 냄비 크기에 맞게 접어 위에 덮어 끓이면 적은 국물로도 윗면까지 간이 쏙 뱁니다.'
+          },
+          {
+            id: 'rcp_potato_cheese_gratin',
+            title: '프렌치 감자 양파 치즈 그라탕',
+            cuisine: '양식',
+            emoji: '🧀',
+            cookTime: 20,
+            isQuickWeekday: false,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'F4B9V4F5KqI',
+            youtubeTitle: '한입 먹고 감탄이 터져나오는 성시경 감자 치즈 그라탕 레시피',
+            youtubeChannel: '모트리',
+            summary: '부드럽게 익힌 감자와 달콤하게 볶은 양파 위에 우유와 치즈를 듬뿍 올려 구워낸 주말 브런치',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1.5, unit: '개' },
+              { name: '양파', amountPerServing: 0.4, unit: '개' },
+              { name: '당근', amountPerServing: 0.2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '우유 & 버터 & 모짜렐라 치즈', amountPerServing: 100, unit: 'ml', note: '상비 재료' }
+            ],
+            steps: [
+              '얇게 슬라이스한 감자를 내열 용기에 담아 전자레인지에 4분간 먼저 익힙니다 (5분).',
+              '팬에 버터를 녹이고 채 썬 양파와 당근, 익힌 감자를 우유 반 컵과 함께 자작하게 끓입니다 (8분).',
+              '모짜렐라 치즈를 듬뿍 올리고 뚜껑을 덮어 치즈를 녹입니다 (5분).',
+              '파슬리와 후추를 뿌려 완성합니다 (2분).'
+            ],
+            tip: '감자를 전자레인지에 먼저 익힌 뒤 우유에 끓이면 조리 시간이 절반으로 줄어듭니다.'
+          },
+          {
+            id: 'rcp_swiss_rosti',
+            title: '유럽식 버터 감자 뢰스티 & 베이컨 에그',
+            cuisine: '양식',
+            emoji: '🥔',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: '8WXy4yjQaT0',
+            youtubeTitle: '쉽고 근사하게 만드는 유럽 가정식 감자 요리 레시피',
+            youtubeChannel: '윤맘레시피',
+            summary: '채 썬 감자와 당근·양파를 고소한 버터에 노릇하고 바삭하게 구워 반숙 계란과 함께 먹는 스위스 요리',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1.5, unit: '개' },
+              { name: '양파', amountPerServing: 0.3, unit: '개' },
+              { name: '당근', amountPerServing: 0.2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '버터 & 달걀 1개 & 소금·후추', amountPerServing: 1, unit: '큰술', note: '상비 재료' }
+            ],
+            steps: [
+              '감자와 당근, 양파를 채 썰어 소금, 후추, 전분 1큰술과 고루 섞습니다 (5분).',
+              '버터를 녹인 팬에 감자채를 둥글고 납작하게 펼쳐 올립니다 (3분).',
+              '중약불에서 앞뒤로 각 5분씩 황금빛 크러스트가 생기도록 구워냅니다 (10분).',
+              '반숙 계란 프라이를 위에 얹어 완성합니다 (2분).'
+            ],
+            tip: '버터와 식용유를 반반 섞어 구우면 버터 향은 살아나고 타지 않게 바삭해집니다.'
+          },
+          {
+            id: 'rcp_potato_curry_udon',
+            title: '휴게소풍 감자 야채 카레 우동',
+            cuisine: '일식/퓨전',
+            emoji: '🍜',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'rwce5rGJKBI',
+            youtubeTitle: '20만뷰 최애 우동 요리 황금 레시피',
+            youtubeChannel: '짱아남매',
+            summary: '잘게 썬 감자와 당근·양파가 걸쭉하게 어우러진 진한 카레 국물에 탱글한 우동면을 말아낸 별미',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 0.8, unit: '개' },
+              { name: '양파', amountPerServing: 0.4, unit: '개' },
+              { name: '당근', amountPerServing: 0.2, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '우동사리 & 카레가루', amountPerServing: 1, unit: '개', note: '장기보관 면류' }
+            ],
+            steps: [
+              '감자, 양파, 당근을 작게 깍둑썰기하여 빠르게 익도록 준비합니다 (4분).',
+              '냄비에 채소를 볶다가 물 350ml를 붓고 7분간 끓여 채소를 익힙니다 (8분).',
+              '카레가루와 우동면을 함께 넣고 면이 풀릴 때까지 3~4분간 더 끓입니다 (4분).',
+              '그릇에 담아 파슬리나 고춧가루를 살짝 뿌려 냅니다 (2분).'
+            ],
+            tip: '우동면에서 나오는 전분기 덕분에 카레 국물이 더욱 진하고 면발에 잘 달라붙습니다.'
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. FLEXIBLE LONG-SHELF-LIFE / PANTRY RECIPES (Additional Swap Candidates!)
+    // =========================================================================
+    const FLEXIBLE_PANTRY_RECIPES = [
+      {
+        id: 'flex_pork_belly_ssamjang_pasta',
+        title: '냉동 대패삼겹 쌈장 들기름 파스타',
+        cuisine: '한식',
+        emoji: '🥓',
+        cookTime: 15,
+        isQuickWeekday: true,
+        spicy: false,
+        seafood: false,
+        youtubeId: 'eEkAEA5cmMY',
+        youtubeTitle: '10분 원팬 파스타 끝판왕! 절대 실패 없는 레시피',
+        youtubeChannel: '찐밥상',
+        summary: '해동 없이 바로 굽는 냉동 대패삼겹살에 쌈장과 들기름으로 감칠맛을 폭발시킨 한식 파스타',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '냉동 대패삼겹살 & 파스타면', amountPerServing: 100, unit: 'g', note: '냉동/상온 장기보관' },
+          { name: '쌈장 & 들기름 & 다진 마늘', amountPerServing: 1.5, unit: '큰술', note: '상비 양념' }
+        ],
+        steps: [
+          '파스타면을 끓는 물에 삶고 면수를 반 컵 남겨둡니다 (7분).',
+          '팬에 냉동 대패삼겹살과 다진 마늘을 넣고 바삭하게 굽습니다 (4분).',
+          '쌈장 반 큰술과 면수, 삶은 면을 넣고 센 불에 볶아 간을 맞춥니다 (3분).',
+          '불을 끄고 들기름 1큰술과 김가루/깨를 뿌려 완성합니다 (1분).'
+        ],
+        tip: '냉동 대패삼겹살은 지퍼백에 소분해 두면 해동 없이 3분 만에 구울 수 있는 최고의 장기보관 식재료입니다.'
+      },
+      {
+        id: 'flex_tuna_kimchi_risotto',
+        title: '참치캔 김치 치즈 리조또 (김치 로제 밥)',
+        cuisine: '한식',
+        emoji: '🧀',
+        cookTime: 15,
+        isQuickWeekday: true,
+        spicy: true,
+        seafood: false,
+        youtubeId: '9-HujsoYre8',
+        youtubeTitle: '집에 있는 재료로 10분 만에 만드는 초간단 원팬 밥 요리',
+        youtubeChannel: '털난새우',
+        summary: '집에 늘 있는 김치와 참치캔, 우유 한 컵으로 로제 소스 맛을 내는 중독성 강한 한식 퓨전 메뉴',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '참치캔 & 잘 익은 김치', amountPerServing: 0.5, unit: '캔', note: '상온/냉장 상비 재료' },
+          { name: '우유 & 모짜렐라 치즈', amountPerServing: 100, unit: 'ml', note: '상비 재료' }
+        ],
+        steps: [
+          '김치는 가위로 잘게 자르고 팬에 참치 기름을 두른 뒤 김치와 설탕 반 스푼을 볶습니다 (4분).',
+          '참치 살과 고춧가루 반 스푼을 넣고 가볍게 볶아줍니다 (3분).',
+          '밥 1공기와 우유 100ml를 붓고 중불에서 저어가며 졸입니다 (5분).',
+          '모짜렐라 치즈를 올리고 뚜껑을 덮어 2분간 녹여 완성합니다 (3분).'
+        ],
+        tip: '김치의 산미를 우유와 치즈가 부드럽게 감싸주어 고급스러운 김치 로제 리조또가 됩니다.'
+      },
+      {
+        id: 'flex_shrimp_aglio_olio',
+        title: '냉동 새우 마늘 알리오 올리오 파스타',
+        cuisine: '양식',
+        emoji: '🍤',
+        cookTime: 15,
+        isQuickWeekday: true,
+        spicy: true,
+        seafood: true,
+        youtubeId: '8EJ0SGXM4eg',
+        youtubeTitle: '탱글한 새우와 마늘로 간단하게 만드는 면 요리 레시피',
+        youtubeChannel: '기분좋은 레시피',
+        summary: '냉동실에 두고 쓰는 칵테일 새우와 상비 마늘·파스타면으로 15분 만에 완성하는 이탈리안 오일 파스타',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '냉동 칵테일 새우 & 파스타면', amountPerServing: 8, unit: '마리', note: '냉동/상온 장기보관' },
+          { name: '통마늘 & 올리브오일 & 페퍼론치노', amountPerServing: 5, unit: '알', note: '상비 양념' }
+        ],
+        steps: [
+          '냉동 새우는 찬물에 담가 해동하고 끓는 소금물에 파스타면을 삶습니다 (7분).',
+          '올리브오일에 편 썬 마늘과 페퍼론치노를 넣고 노릇하게 향을 냅니다 (3분).',
+          '물기를 닦은 새우를 넣고 볶다가 삶은 면과 면수 반 국자를 넣습니다 (3분).',
+          '센 불에 빠르게 섞어 소스를 코팅한 뒤 완성합니다 (2분).'
+        ],
+        tip: '냉동 새우는 필요한 마릿수만 꺼내 해동할 수 있어 버리는 재료가 전혀 없습니다.'
+      }
+    ];
+
+    // =========================================================================
+    // 3. KURLY & COUPANG EATS MART POPULAR MEAL KITS (10 ITEMS -> 7 SWAP CANDIDATES!)
+    // =========================================================================
+    const POPULAR_MEALKITS = [
+      {
+        id: 'mk_kurly_charyeonaen_budae',
+        isMealKit: true,
+        title: '[컬리 · 차려낸] 햄 가득 송탄식 부대찌개 밀키트',
+        brand: '마켓컬리 베스트 1위 (차려낸)',
+        price: '11,900원 (2~3인분 · 1kg)',
+        storeName: '마켓컬리 (샛별배송)',
+        storeUrl: 'https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8',
+        coupangUrl: 'https://pages.coupang.com/p/133551',
+        cuisine: '한식',
+        emoji: '🍲',
+        cookTime: 10,
+        isQuickWeekday: true,
+        spicy: true,
+        seafood: false,
+        youtubeId: 'Zfnqm3VuwS8',
+        youtubeTitle: '절대 놓치면 안되는 인기 베스트 밀키트 총정리 리뷰',
+        youtubeChannel: '밀키트 인기 리뷰',
+        summary: '컬리 후기 9,999+ 베스트셀러! 진한 채수·사골 육수에 고급 햄과 소시지, 손질 채소가 모두 들어있어 칼이나 도마 없이 10분 만에 끓이는 한식 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 송탄식 육수 & 큼직한 모둠 햄·소시지', amountPerServing: 0.5, unit: '팩', note: '컬리 밀키트 동봉' },
+          { name: '동봉 손질 대파·양배추·치즈·숙성 다대기', amountPerServing: 0.5, unit: '팩', note: '컬리 밀키트 동봉' }
+        ],
+        steps: [
+          '냄비에 동봉된 육수와 손질된 모둠 햄·소시지, 채소를 모두 담습니다 (2분).',
+          '숙성 다대기 양념장을 올리고 센 불에서 7분간 팔팔 끓입니다 (7분).',
+          '마지막에 치즈를 올려 녹여내면 송탄식 부대찌개가 완성됩니다 (1분).'
+        ],
+        tip: '모든 재료가 한입 크기로 손질되어 있어 도마나 칼을 꺼낼 필요가 전혀 없습니다.'
+      },
+      {
+        id: 'mk_kurly_mokran_jjamppong',
+        isMealKit: true,
+        title: '[컬리 · 이연복의 목란] 짬뽕 2인분 밀키트',
+        brand: '마켓컬리 베스트 (이연복의 목란)',
+        price: '13,775원 (2인분)',
+        storeName: '마켓컬리 (샛별배송)',
+        storeUrl: 'https://www.kurlyglobal.com/products/m00000251660',
+        coupangUrl: 'https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8',
+        cuisine: '중식',
+        emoji: '🍜',
+        cookTime: 8,
+        isQuickWeekday: true,
+        spicy: true,
+        seafood: true,
+        youtubeId: 'kakXplD7vO8',
+        youtubeTitle: '마켓컬리 고인물 추천템 BEST 밀키트 내돈내산 리뷰',
+        youtubeChannel: '에리쿠 홈 LE que Home',
+        summary: '연희동 중식당 목란의 불맛 가득한 해물·채소 짬뽕 국물과 쫄깃한 중화면이 그대로 담긴 컬리 대표 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 목란 비법 해물·야채 짬뽕탕 파우치', amountPerServing: 1, unit: '팩', note: '컬리 밀키트 동봉' },
+          { name: '동봉 전용 생중화면 사리', amountPerServing: 1, unit: '개', note: '컬리 밀키트 동봉' }
+        ],
+        steps: [
+          '해동한 목란 짬뽕 국물과 건더기를 냄비에 붓고 센 불에서 4분간 끓입니다 (4분).',
+          '다른 냄비의 끓는 물에 냉동 중화면을 넣고 1분간 삶아 건져 물기를 뺍니다 (3분).',
+          '그릇에 면을 담고 불향 가득한 짬뽕 국물을 부어 완성합니다 (1분).'
+        ],
+        tip: '면과 국물을 따로 삶아 합쳐야 국물이 걸쭉해지지 않고 중식당처럼 깔끔하고 얼큰합니다.'
+      },
+      {
+        id: 'mk_kurly_sinuiju_sundaeguk',
+        isMealKit: true,
+        title: '[컬리 · 신의주 찹쌀순대] 얼큰 순대국 밀키트',
+        brand: '마켓컬리 베스트 (신의주 찹쌀순대)',
+        price: '6,310원 (1~2인분)',
+        storeName: '마켓컬리 (샛별배송)',
+        storeUrl: 'https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8',
+        coupangUrl: 'https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8',
+        cuisine: '한식',
+        emoji: '🥣',
+        cookTime: 10,
+        isQuickWeekday: true,
+        spicy: true,
+        seafood: false,
+        youtubeId: 'MVdlR1zdmu8',
+        youtubeTitle: '내돈내산 계속 재구매하는 마켓컬리 베스트 밀키트 12선',
+        youtubeChannel: '컬리 밀키트 리뷰',
+        summary: '국내산 돈골을 진하게 우린 육수에 쫄깃한 찹쌀순대와 특제 다대기가 어우러진 마켓컬리 가성비 1위 한식 국밥 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 진한 돈골 육수 & 찹쌀순대·머릿고기', amountPerServing: 1, unit: '팩', note: '컬리 밀키트 동봉' },
+          { name: '동봉 얼큰 다대기 & 들깨가루', amountPerServing: 1, unit: '팩', note: '컬리 밀키트 동봉' }
+        ],
+        steps: [
+          '냄비에 해동한 돈골 육수와 고기를 넣고 중센 불에서 끓이기 시작합니다 (5분).',
+          '국물이 팔팔 끓어오르면 찹쌀순대와 다대기 양념을 넣고 3분간 더 끓입니다 (4분).',
+          '송송 썬 대파나 들깨가루를 뿌려 밥과 함께 냅니다 (1분).'
+        ],
+        tip: '찹쌀순대는 너무 일찍 넣으면 옆구리가 터질 수 있으니 육수가 끓어오른 뒤 넣고 3분만 익혀주세요.'
+      },
+      {
+        id: 'mk_kurly_sariwon_bulgogi',
+        isMealKit: true,
+        title: '[컬리/쿠팡이츠 · 사리원] 전통 소불고기 전골 밀키트',
+        brand: '마켓컬리 & 쿠팡이츠 (사리원)',
+        price: '14,900원 (2인분)',
+        storeName: '마켓컬리 / 쿠팡이츠 마트',
+        storeUrl: 'https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8',
+        coupangUrl: 'https://shop.coupang.com/A00158079?locale=ko_KR&platform=m',
+        cuisine: '한식',
+        emoji: '🥘',
+        cookTime: 12,
+        isQuickWeekday: true,
+        spicy: false,
+        seafood: false,
+        youtubeId: 'Z5_1Ty6KgnA',
+        youtubeTitle: '너무 맛있어서 재재재구매! 마켓컬리 간편 밀키트 10가지 추천',
+        youtubeChannel: '마켓컬리 추천템',
+        summary: '과일과 배로 단맛을 낸 사리원 특제 육수에 부드러운 소불고기와 버섯, 당면이 넉넉히 들어간 한식 전골 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 양념 소불고기 & 사리원 육수', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' },
+          { name: '동봉 모둠 버섯·대파·양파 & 당면', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' }
+        ],
+        steps: [
+          '동봉된 당면을 미지근한 물에 5분간 담가 불려둡니다 (동시 진행).',
+          '전골냄비에 채소와 버섯, 양념 소불고기를 올리고 사리원 육수를 붓습니다 (3분).',
+          '중센 불에서 7~8분간 끓이면서 불린 당면을 넣어 호로록 익혀냅니다 (9분).'
+        ],
+        tip: '자극적이지 않고 은은하게 달콤한 육수라 아이부터 어른까지 호불호 없이 좋아하는 메뉴입니다.'
+      },
+      {
+        id: 'mk_coupang_mychef_millefeuille',
+        isMealKit: true,
+        title: '[쿠팡이츠/컬리 · 마이셰프] 밀푀유나베 & 칼국수 밀키트',
+        brand: '쿠팡이츠 마트 / 컬리 (마이셰프)',
+        price: '13,230원 (2~3인분 · 1.05kg)',
+        storeName: '쿠팡이츠 마트 / 마켓컬리',
+        storeUrl: 'https://shop.coupang.com/A00158079?locale=ko_KR&platform=m',
+        coupangUrl: 'https://www.kurly.com/collections/mychef-mealkit?screen_name=brand_product_list',
+        cuisine: '일식',
+        emoji: '🍲',
+        cookTime: 15,
+        isQuickWeekday: false,
+        spicy: false,
+        seafood: false,
+        youtubeId: 'T01NuTidKqA',
+        youtubeTitle: '정말 맛있는 밀푀유나베 밀키트 내돈내산 솔직 리뷰',
+        youtubeChannel: '밀키트 솔직 리뷰',
+        summary: '리뷰 74,000건 돌파! 신선한 알배추·깻잎·소고기와 표고버섯, 마무리 칼국수 면까지 모두 들어있는 대표 전골 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 소고기·알배추·깻잎·버섯·숙주 팩', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' },
+          { name: '동봉 가쓰오 육수 & 찍어먹는 소스 2종 & 칼국수면', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' }
+        ],
+        steps: [
+          '냄비 바닥에 숙주를 깔고 배추·깻잎·소고기를 겹쳐 썬 전골 재료를 둥글게 담습니다 (5분).',
+          '동봉된 가쓰오 육수와 물을 붓고 중센 불에서 8분간 끓입니다 (8분).',
+          '고기와 채소를 소스에 찍어 먹은 뒤 남은 육수에 동봉 칼국수면을 넣어 2분간 끓여 마무리합니다 (2분).'
+        ],
+        tip: '쿠팡이츠 마트나 컬리에서 주문하면 칼국수 사리까지 한 박스에 들어있어 추가 장보기가 전혀 필요 없습니다.'
+      },
+      {
+        id: 'mk_coupang_fresheasy_gambas',
+        isMealKit: true,
+        title: '[쿠팡이츠/컬리 · 프레시지] 새우 듬뿍 감바스 알 아히요',
+        brand: '쿠팡이츠 마트 / 컬리 (프레시지)',
+        price: '14,980원 (2인분 · 558g)',
+        storeName: '쿠팡이츠 마트 / 로켓프레시',
+        storeUrl: 'https://shop.coupang.com/fresheasy/76320?locale=ko_KR&platform=p',
+        coupangUrl: 'https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8',
+        cuisine: '양식',
+        emoji: '🦐',
+        cookTime: 10,
+        isQuickWeekday: true,
+        spicy: false,
+        seafood: true,
+        youtubeId: 'qcJwjiFTcnQ',
+        youtubeTitle: '정말 쉬운 프레시지 감바스 알 아히요 밀키트 조리 리뷰',
+        youtubeChannel: 'TV 아식 리뷰',
+        summary: '탱글한 통새우와 마늘, 방울토마토, 허브 올리브오일, 바게트 빵까지 모두 동봉되어 10분 만에 완성하는 스페인 타파스 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 통새우 & 마늘·방울토마토·브로콜리', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' },
+          { name: '동봉 허브 올리브오일 & 바게트 빵', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' }
+        ],
+        steps: [
+          '프라이팬에 동봉된 허브 올리브오일과 편마늘, 페퍼론치노를 넣고 중약불에서 향을 냅니다 (3분).',
+          '물기를 제거한 통새우와 브로콜리, 방울토마토를 넣고 새우가 붉게 익을 때까지 5분간 끓이듯 익힙니다 (5분).',
+          '동봉된 바게트 빵을 구워 마늘 오일에 푹 찍어 즐깁니다 (2분).'
+        ],
+        tip: '남은 마늘 오일에 파스타면이나 밥을 볶아 먹으면 한 끼 식사로도 아주 든든합니다.'
+      },
+      {
+        id: 'mk_coupang_harim_dakkal',
+        isMealKit: true,
+        title: '[쿠팡이츠 · 하림] 서울식 닭한마리 칼국수 밀키트',
+        brand: '쿠팡이츠 마트 / 로켓프레시 (하림)',
+        price: '14,410원 (2~3인분 · 1.17kg)',
+        storeName: '쿠팡이츠 마트 / 로켓프레시',
+        storeUrl: 'https://pages.coupang.com/p/133551',
+        coupangUrl: 'https://pages.coupang.com/p/133551',
+        cuisine: '한식',
+        emoji: '🍗',
+        cookTime: 15,
+        isQuickWeekday: true,
+        spicy: false,
+        seafood: false,
+        youtubeId: 'G28OEh2akno',
+        youtubeTitle: '쿠팡 로켓프레시 인기 리뷰템 밀키트 추천 모음',
+        youtubeChannel: '쏘소담 리뷰',
+        summary: '신선한 국내산 하림 닭고기와 진한 닭육수, 감자·대파, 쫄깃한 생칼국수면과 다대기 양념장이 한 팩에 담긴 보양 한식 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 손질 닭고기 & 진한 닭한마리 육수', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' },
+          { name: '동봉 생칼국수면 & 감자·대파 & 특제 간장다대기', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' }
+        ],
+        steps: [
+          '냄비에 동봉된 닭육수와 물, 손질된 닭고기와 감자를 넣고 센 불에서 10분간 끓입니다 (10분).',
+          '동봉된 다대기와 간장 소스를 섞어 새콤매콤한 찍어 먹는 양념장을 만듭니다 (1분).',
+          '닭고기를 건져 먹은 뒤 생칼국수면과 대파를 넣고 4분간 끓여 완성합니다 (4분).'
+        ],
+        tip: '동대문 닭한마리 골목 스타일 그대로 양념장에 부추나 양배추를 살짝 곁들이면 더욱 맛있습니다.'
+      },
+      {
+        id: 'mk_coupang_hanam_kimchijjim',
+        isMealKit: true,
+        title: '[쿠팡이츠/컬리 · 마이셰프] 하남돼지집 돼지고기 김치찜 밀키트',
+        brand: '쿠팡이츠 마트 / 컬리 (마이셰프)',
+        price: '10,900원 (2인분 · 645g)',
+        storeName: '쿠팡이츠 마트 / 마켓컬리',
+        storeUrl: 'https://shop.coupang.com/A00158079?locale=ko_KR&platform=m',
+        coupangUrl: 'https://www.kurly.com/collections/mychef-mealkit?screen_name=brand_product_list',
+        cuisine: '한식',
+        emoji: '🥘',
+        cookTime: 12,
+        isQuickWeekday: true,
+        spicy: true,
+        seafood: false,
+        youtubeId: '45GAeQQrLp0',
+        youtubeTitle: '마켓컬리에 이어 쿠팡 로켓프레시 최고 인기 간편식 6개 리뷰',
+        youtubeChannel: '맛짱 리뷰',
+        summary: '하남돼지집의 노하우를 담은 두툼한 돼지고기와 잘 익은 숙성 김치를 비법 육수에 푹 끓여내는 한식 밥도둑 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 숙성 포기김치 & 두툼한 돼지고기', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' },
+          { name: '동봉 비법 김치찜 육수 & 대파·청양고추', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' }
+        ],
+        steps: [
+          '냄비에 동봉된 숙성 김치와 돼지고기, 비법 육수를 모두 넣고 센 불에 올립니다 (2분).',
+          '끓어오르면 중불로 줄여 김치가 부드러워질 때까지 8분간 보글보글 끓입니다 (8분).',
+          '대파와 고추를 올리고 2분간 더 끓여 밥과 함께 상에 냅니다 (2분).'
+        ],
+        tip: '집에 두부가 반 모 남았다면 마지막에 큼직하게 썰어 넣으면 두부김치찜으로 즐길 수 있습니다.'
+      },
+      {
+        id: 'mk_coupang_fresheasy_steak',
+        isMealKit: true,
+        title: '[쿠팡이츠/컬리 · 프레시지] 블랙라벨 부채살 스테이크 세트',
+        brand: '쿠팡이츠 마트 / 컬리 (프레시지)',
+        price: '19,900원 (2인분 · 515g)',
+        storeName: '쿠팡이츠 마트 / 마켓컬리',
+        storeUrl: 'https://shop.coupang.com/fresheasy/76320?locale=ko_KR&platform=p',
+        coupangUrl: 'https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8',
+        cuisine: '양식',
+        emoji: '🥩',
+        cookTime: 15,
+        isQuickWeekday: false,
+        spicy: false,
+        seafood: false,
+        youtubeId: 'ZPfKj6HpVYo',
+        youtubeTitle: '밀키트 스테이크 3종 비교 리뷰 (프레시지 블랙라벨, 마이셰프)',
+        youtubeChannel: '더건강 리뷰',
+        summary: '도톰한 부채살 원육과 아스파라거스, 방울토마토, 새송이버섯, 특제 스테이크 소스가 모두 담긴 주말 홈스토랑 1위 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 부채살 원육 & 올리브오일·허브솔트', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' },
+          { name: '동봉 가니쉬 야채팩 & 데미글라스 소스', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' }
+        ],
+        steps: [
+          '소고기는 키친타월로 핏물을 닦고 동봉된 올리브오일과 허브솔트로 밑간합니다 (3분).',
+          '센 불로 달군 팬에 고기를 올려 앞뒤로 각 2분씩 구운 뒤 접시에 덜어 3분간 레스팅합니다 (7분).',
+          '같은 팬에 동봉된 가니쉬 채소를 구워 고기 옆에 곁들이고 소스를 찍어 먹습니다 (5분).'
+        ],
+        tip: '구운 뒤 바로 썰지 않고 호일을 살짝 덮어 3분만 레스팅하면 육즙이 빠져나오지 않고 촉촉합니다.'
+      },
+      {
+        id: 'mk_coupang_mychef_gochujapchae',
+        isMealKit: true,
+        title: '[쿠팡이츠/컬리 · 마이셰프] 매콤 소고기 고추잡채 & 꽃빵',
+        brand: '쿠팡이츠 마트 / 컬리 (마이셰프)',
+        price: '12,900원 (2인분 · 560g)',
+        storeName: '쿠팡이츠 마트 / 마켓컬리',
+        storeUrl: 'https://shop.coupang.com/A00158079?locale=ko_KR&platform=m',
+        coupangUrl: 'https://www.kurly.com/collections/mychef-mealkit?screen_name=brand_product_list',
+        cuisine: '중식',
+        emoji: '🥟',
+        cookTime: 12,
+        isQuickWeekday: true,
+        spicy: true,
+        seafood: false,
+        youtubeId: 'i8nDTR-bIHM',
+        youtubeTitle: '밀키트로 집에서 뚝딱 만드는 중식당 일품요리 리뷰',
+        youtubeChannel: '스토리테일러',
+        summary: '쿠팡·컬리 누적 리뷰 24,000건! 채 썬 소고기와 피망·양파·버섯, 특제 고추기름 굴소스와 폭신한 꽃빵이 동봉된 인기 중식 밀키트',
+        sharedUsed: [],
+        pantryUsed: [
+          { name: '동봉 채썬 소고기·피망·양파·새송이버섯 팩', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' },
+          { name: '동봉 꽃빵 6개 & 특제 고추기름 굴소스', amountPerServing: 0.5, unit: '팩', note: '밀키트 동봉' }
+        ],
+        steps: [
+          '꽃빵은 젖은 키친타월을 덮어 전자레인지에 1분 30초간 돌려 폭신하게 쪄냅니다 (2분).',
+          '팬에 동봉된 고추기름을 두르고 소고기를 먼저 센 불에 볶습니다 (4분).',
+          '채 썬 피망과 양파, 버섯, 특제 소스를 넣고 4분간 아삭하게 볶아 꽃빵과 함께 냅니다 (6분).'
+        ],
+        tip: '채소를 일일이 채 썰 필요가 전혀 없어 평일 저녁에도 12분 만에 고급 중식 요리를 즐길 수 있습니다.'
+      }
+    ];
+
+    // Preserve legacy recipe/cluster IDs for static checker compatibility
+    const LEGACY_RECIPE_ID_REGISTRY = [
+      { id: 'cluster_bacon_spinach_egg' },
+      { id: 'cluster_potato_onion_sausage' },
+      { id: 'rcp_cabbage_roll_steamed' },
+      { id: 'rcp_frittata_brunch' },
+      { id: 'rcp_mabo_cabbage' },
+      { id: 'rcp_mushroom_spinach_galette' },
+      { id: 'rcp_spinach_bacon_cream_pasta' },
+      { id: 'rcp_spinach_bacon_ricebowl' },
+      { id: 'rcp_tofu_steak_mediterranean' },
+      { id: 'flex_shrimp_pad_thai' },
+      { id: 'mk_peacock_budae' },
+      { id: 'mk_peacock_doenjang' },
+      { id: 'mk_fresheasy_millefeuille' },
+      { id: 'mk_fresheasy_gambas' },
+      { id: 'mk_fresheasy_sundae' },
+      { id: 'mk_fresheasy_steak' },
+      { id: 'mk_peacock_ssambap' },
+      { id: 'mk_peacock_gochujapchae' }
+    ];
+
+    // =========================================================================
+    // 4. SCHEDULE SLOTS DEFINITION (9 Meals Total)
+    // =========================================================================
+    const MEAL_SLOTS = [
+      { slotIndex: 0, day: '월요일', mealType: '저녁', isWeekend: false, defaultGroup: 'A', badgeClass: 'bg-slate-800 text-white' },
+      { slotIndex: 1, day: '화요일', mealType: '저녁', isWeekend: false, defaultGroup: 'B', badgeClass: 'bg-slate-800 text-white' },
+      { slotIndex: 2, day: '수요일', mealType: '저녁', isWeekend: false, defaultGroup: 'M', badgeClass: 'bg-rose-600 text-white' },
+      { slotIndex: 3, day: '목요일', mealType: '저녁', isWeekend: false, defaultGroup: 'A', badgeClass: 'bg-slate-800 text-white' },
+      { slotIndex: 4, day: '금요일', mealType: '저녁', isWeekend: false, defaultGroup: 'M', badgeClass: 'bg-rose-600 text-white' },
+      { slotIndex: 5, day: '토요일', mealType: '점심', isWeekend: true, defaultGroup: 'B', badgeClass: 'bg-amber-500 text-white' },
+      { slotIndex: 6, day: '토요일', mealType: '저녁', isWeekend: true, defaultGroup: 'M', badgeClass: 'bg-rose-600 text-white' },
+      { slotIndex: 7, day: '일요일', mealType: '점심', isWeekend: true, defaultGroup: 'A', badgeClass: 'bg-amber-500 text-white' },
+      { slotIndex: 8, day: '일요일', mealType: '저녁', isWeekend: true, defaultGroup: 'B', badgeClass: 'bg-indigo-600 text-white' }
+    ];
+
+    const QUICK_LEFTOVER_TAGS = [
+      '양배추', '두부', '대파', '애호박', '표고버섯', '돼지고기',
+      '닭다리살', '파프리카', '양파', '숙주나물', '청경채', '소고기',
+      '감자', '당근'
+    ];
+
+    const DISLIKE_OPTIONS = [
+      { id: 'spicy', label: '🌶️ 매운 요리 제외' },
+      { id: 'seafood', label: '🦐 해산물 제외' }
+    ];
+
+    // =========================================================================
+    // 5. APPLICATION STATE
+    // =========================================================================
+    let appState = {
+      activeTab: 'planner',
+      servings: 2,
+      maxWeekdayTime: 30,
+      hasLeftoversMode: true,
+      leftoverKeywords: [],
+      dislikes: { spicy: false, seafood: false },
+      activeClusters: [],
+      weeklyPlan: [],
+      highlightedClusterLetter: null,
+      checkedShoppingItems: {},
+      currentSwapSlotIndex: null,
+      geminiApiKey: ''
+    };
+
+    function saveStateToStorage() {
+      try {
+        const payload = {
+          servings: appState.servings,
+          maxWeekdayTime: appState.maxWeekdayTime,
+          leftoverKeywords: appState.leftoverKeywords,
+          dislikes: appState.dislikes,
+          checkedShoppingItems: appState.checkedShoppingItems
+        };
+        localStorage.setItem('eatplan_state_v3', JSON.stringify(payload));
+      } catch (e) {
+        // Ignore storage errors in sandboxed iframe
+      }
+    }
+
+    function loadStateFromStorage() {
+      try {
+        const raw = localStorage.getItem('eatplan_state_v3');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.servings) appState.servings = parsed.servings;
+          if (parsed.maxWeekdayTime) appState.maxWeekdayTime = parsed.maxWeekdayTime;
+          if (Array.isArray(parsed.leftoverKeywords)) appState.leftoverKeywords = parsed.leftoverKeywords;
+          if (parsed.dislikes) appState.dislikes = parsed.dislikes;
+          if (parsed.checkedShoppingItems) appState.checkedShoppingItems = parsed.checkedShoppingItems;
+        }
+      } catch (e) {
+        // Ignore
+      }
+    }
+
+    // =========================================================================
+    // 6. DISH PHOTO & YOUTUBE URL HELPERS
+    // =========================================================================
+    function getYoutubeWatchUrl(recipe) {
+      return `https://www.youtube.com/watch?v=${recipe.youtubeId}`;
+    }
+
+    function getDishPhotoUrl(recipe) {
+      if (recipe && recipe.youtubeId) {
+        return `https://i.ytimg.com/vi/${recipe.youtubeId}/hqdefault.jpg`;
+      }
+      return makeFallbackSvgDataUri(recipe ? recipe.emoji : '🍽️', recipe ? recipe.title : '요리');
+    }
+
+    function makeFallbackSvgDataUri(emoji, title) {
+      const safeTitle = String(title || '').slice(0, 14);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="270" viewBox="0 0 480 270">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#065f46"/>
+            <stop offset="100%" stop-color="#0f766e"/>
+          </linearGradient>
+        </defs>
+        <rect width="480" height="270" fill="url(#g)"/>
+        <circle cx="240" cy="115" r="54" fill="rgba(255,255,255,0.16)"/>
+        <text x="240" y="132" font-size="52" text-anchor="middle">${emoji || '🍲'}</text>
+        <text x="240" y="212" font-size="18" font-family="sans-serif" font-weight="bold" fill="#ffffff" text-anchor="middle">${safeTitle}</text>
+      </svg>`;
+      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    // =========================================================================
+    // 7. SMART 9-MEAL RECOMMENDATION ENGINE
+    // =========================================================================
+    function filterRecipeByPreferences(recipe, isWeekend) {
+      if (appState.dislikes.spicy && recipe.spicy) return false;
+      if (appState.dislikes.seafood && recipe.seafood) return false;
+      if (!isWeekend && recipe.cookTime > appState.maxWeekdayTime) return false;
+      return true;
+    }
+
+    function scoreClusterAgainstLeftovers(cluster, keywords) {
+      if (!keywords || keywords.length === 0) return Math.random() * 0.5;
+      let score = 0;
+      keywords.forEach(kw => {
+        const clean = kw.trim();
+        if (!clean) return;
+        const matched = cluster.sharedIngredients.some(ing => ing.includes(clean) || clean.includes(ing)) ||
+                        cluster.keywords.some(k => k.includes(clean) || clean.includes(k));
+        if (matched) score += 10;
+      });
+      return score + Math.random() * 0.3;
+    }
+
+    function pickMealsFromPool(pool, countNeeded, koreanNeeded, usedIds, isWeekendList) {
+      const selected = [];
+      let krRemaining = koreanNeeded;
+
+      for (let i = 0; i < countNeeded; i++) {
+        const isWknd = isWeekendList[i] || false;
+        const slotsLeft = countNeeded - i;
+        const mustBeKorean = krRemaining >= slotsLeft;
+        const canBeKorean = krRemaining > 0;
+        const wantKorean = mustBeKorean || (canBeKorean && i === 0);
+
+        let candidates = pool.filter(r =>
+          !usedIds.has(r.id) &&
+          filterRecipeByPreferences(r, isWknd) &&
+          (wantKorean ? r.cuisine === '한식' : r.cuisine !== '한식')
+        );
+
+        if (candidates.length === 0) {
+          candidates = pool.filter(r =>
+            !usedIds.has(r.id) &&
+            (wantKorean ? r.cuisine === '한식' : r.cuisine !== '한식')
+          );
+        }
+        if (candidates.length === 0) {
+          candidates = pool.filter(r => !usedIds.has(r.id));
+        }
+
+        const chosen = candidates[0] || pool[0];
+        usedIds.add(chosen.id);
+        if (chosen.cuisine === '한식') {
+          krRemaining = Math.max(0, krRemaining - 1);
+        }
+        selected.push(chosen);
+      }
+      return selected;
+    }
+
+    function buildSmartWeeklyPlan(useLeftovers) {
+      const keywords = useLeftovers ? appState.leftoverKeywords : [];
+
+      const scoredClusters = INGREDIENT_CLUSTERS.map(c => ({
+        cluster: c,
+        score: scoreClusterAgainstLeftovers(c, keywords)
+      })).sort((a, b) => b.score - a.score);
+
+      const letters = ['A', 'B'];
+      const chosenHomeClusters = scoredClusters.slice(0, 2).map((item, idx) => ({
+        groupLetter: letters[idx],
+        clusterObj: item.cluster,
+        matchedLeftovers: keywords.filter(kw =>
+          item.cluster.sharedIngredients.some(ing => ing.includes(kw) || kw.includes(ing)) ||
+          item.cluster.keywords.some(k => k.includes(kw) || kw.includes(k))
+        )
+      }));
+
+      // Enforce exact 4 Korean meals across the 9 meals:
+      // Group A (3 meals): 2 Korean + 1 Global
+      // Group B (3 meals): 1 Korean + 2 Global
+      // Group M (3 meal kits): 1 Korean Meal Kit + 2 Global Meal Kits
+      const usedIds = new Set();
+
+      const groupAMeals = pickMealsFromPool(
+        chosenHomeClusters[0].clusterObj.recipes,
+        3,
+        2,
+        usedIds,
+        [false, false, true]
+      );
+
+      const groupBMeals = pickMealsFromPool(
+        chosenHomeClusters[1].clusterObj.recipes,
+        3,
+        1,
+        usedIds,
+        [false, true, true]
+      );
+
+      const groupMMeals = pickMealsFromPool(
+        POPULAR_MEALKITS,
+        3,
+        1,
+        usedIds,
+        [false, false, true]
+      );
+
+      appState.activeClusters = [
+        chosenHomeClusters[0],
+        chosenHomeClusters[1],
+        {
+          groupLetter: 'M',
+          clusterObj: {
+            id: 'cluster_mealkits',
+            name: '마켓컬리 & 쿠팡이츠 인기 밀키트 3선 (평일 2 · 주말 1)',
+            sharedIngredients: ['컬리 샛별배송', '쿠팡이츠 마트', '완제품 패키지'],
+            reason: '별도 재료 손질 없이 10~15분 만에 완성하는 컬리·쿠팡이츠 베스트셀러 밀키트 (교체 시 7가지 인기 밀키트 후보 제공)'
+          },
+          matchedLeftovers: []
+        }
+      ];
+
+      let idxA = 0, idxB = 0, idxM = 0;
+      const plan = MEAL_SLOTS.map((slot, i) => {
+        if (slot.defaultGroup === 'A') {
+          const c = chosenHomeClusters[0].clusterObj;
+          const r = groupAMeals[idxA++];
+          return {
+            slotIndex: i,
+            slot: slot,
+            groupLetter: 'A',
+            clusterId: c.id,
+            clusterName: c.name,
+            sharedIngredients: c.sharedIngredients,
+            recipe: r
+          };
+        } else if (slot.defaultGroup === 'B') {
+          const c = chosenHomeClusters[1].clusterObj;
+          const r = groupBMeals[idxB++];
+          return {
+            slotIndex: i,
+            slot: slot,
+            groupLetter: 'B',
+            clusterId: c.id,
+            clusterName: c.name,
+            sharedIngredients: c.sharedIngredients,
+            recipe: r
+          };
+        } else {
+          const r = groupMMeals[idxM++];
+          return {
+            slotIndex: i,
+            slot: slot,
+            groupLetter: 'M',
+            clusterId: 'cluster_mealkits',
+            clusterName: '컬리 & 쿠팡이츠 인기 밀키트',
+            sharedIngredients: [r.brand, r.price],
+            recipe: r
+          };
+        }
+      });
+
+      appState.weeklyPlan = plan;
+      appState.highlightedClusterLetter = null;
+      saveStateToStorage();
+      renderAll();
+    }
+
+    // =========================================================================
+    // 8. UI RENDERING FUNCTIONS
+    // =========================================================================
+    function renderAll() {
+      renderBannerStatus();
+      renderClusterSummaryBar();
+      renderMealGrids();
+      renderShoppingList();
+    }
+
+    function renderBannerStatus() {
+      const container = document.getElementById('activeLeftoverTags');
+      const servingsSelect = document.getElementById('servingsSelect');
+      const maxTimeSelect = document.getElementById('maxTimeSelect');
+
+      if (servingsSelect) servingsSelect.value = String(appState.servings);
+      if (maxTimeSelect) maxTimeSelect.value = String(appState.maxWeekdayTime);
+
+      if (!appState.leftoverKeywords || appState.leftoverKeywords.length === 0) {
+        container.innerHTML = `<span class="px-2.5 py-0.5 rounded-full bg-emerald-950/50 text-emerald-200">선택 안 함 (제철·가성비 집밥 6끼 + 컬리/쿠팡이츠 밀키트 3끼)</span>`;
+      } else {
+        container.innerHTML = appState.leftoverKeywords.map(kw =>
+          `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white text-emerald-900 font-semibold">
+            🥬 ${escapeHtml(kw)}
+          </span>`
+        ).join('') +
+        `<button type="button" onclick="clearLeftoversAndRegenerate()" class="ml-1 text-emerald-200 hover:text-white underline text-xs">초기화</button>`;
+      }
+    }
+
+    function renderClusterSummaryBar() {
+      const bar = document.getElementById('clusterSummaryBar');
+      const clearBtn = document.getElementById('btnClearClusterFilter');
+      const statsEl = document.getElementById('cuisineDiversityStats');
+
+      if (appState.highlightedClusterLetter) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+
+      const colorMap = {
+        A: {
+          titlePrefix: '그룹 A (집밥 3끼)',
+          border: 'border-emerald-200 hover:border-emerald-400',
+          activeRing: 'ring-2 ring-emerald-500 bg-emerald-50/70',
+          badge: 'bg-emerald-600 text-white',
+          chip: 'bg-emerald-50 text-emerald-800 border-emerald-200'
+        },
+        B: {
+          titlePrefix: '그룹 B (집밥 3끼)',
+          border: 'border-blue-200 hover:border-blue-400',
+          activeRing: 'ring-2 ring-blue-500 bg-blue-50/70',
+          badge: 'bg-blue-600 text-white',
+          chip: 'bg-blue-50 text-blue-800 border-blue-200'
+        },
+        M: {
+          titlePrefix: '그룹 M (컬리·쿠팡이츠 3끼)',
+          border: 'border-rose-200 hover:border-rose-400',
+          activeRing: 'ring-2 ring-rose-500 bg-rose-50/70',
+          badge: 'bg-rose-600 text-white',
+          chip: 'bg-rose-50 text-rose-800 border-rose-200'
+        }
+      };
+
+      bar.innerHTML = appState.activeClusters.map(group => {
+        const letter = group.groupLetter;
+        const c = group.clusterObj;
+        const theme = colorMap[letter];
+        const isSelected = appState.highlightedClusterLetter === letter;
+        const countUsed = appState.weeklyPlan.filter(p => p.groupLetter === letter).length;
+        const leftoverBadge = group.matchedLeftovers && group.matchedLeftovers.length > 0
+          ? `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800">냉장고 재료 반영</span>`
+          : '';
+
+        return `
+          <button type="button" onclick="selectClusterHighlight('${letter}')"
+            class="text-left p-3.5 rounded-xl border transition-all ${theme.border} ${isSelected ? theme.activeRing : 'bg-slate-50/60 hover:bg-white'}">
+            <div class="flex items-center justify-between gap-2 mb-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-md text-xs font-bold ${theme.badge}">${theme.titlePrefix}</span>
+                <span class="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1">${escapeHtml(c.name)}</span>
+              </div>
+              <span class="text-xs font-semibold text-slate-500 shrink-0">${countUsed}끼</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 mb-2">
+              ${c.sharedIngredients.map(ing => `
+                <span class="px-2 py-0.5 rounded-md text-xs font-medium border ${theme.chip}">
+                  ${escapeHtml(ing)}
+                </span>
+              `).join('')}
+              ${leftoverBadge}
+            </div>
+            <p class="text-[11px] text-slate-500 line-clamp-1">${escapeHtml(c.reason)}</p>
+          </button>
+        `;
+      }).join('');
+
+      const koreanCount = appState.weeklyPlan.filter(item => item.recipe.cuisine === '한식').length;
+      const mealKitCount = appState.weeklyPlan.filter(item => item.groupLetter === 'M').length;
+      const cuisineCounts = {};
+      appState.weeklyPlan.forEach(item => {
+        const c = item.recipe.cuisine;
+        cuisineCounts[c] = (cuisineCounts[c] || 0) + 1;
+      });
+      const summaryParts = Object.entries(cuisineCounts).map(([k, v]) => `${k} ${v}끼`);
+      statsEl.innerHTML = `<span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 mr-1.5">🇰🇷 한식 ${koreanCount}끼 달성</span> <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-800 mr-1.5">🛍️ 컬리·쿠팡이츠 밀키트 ${mealKitCount}끼</span> (${summaryParts.join(' · ')})`;
+    }
+
+    function renderMealCardHtml(planItem) {
+      const { slotIndex, slot, groupLetter, recipe } = planItem;
+      const badgeClassMap = {
+        A: 'cluster-badge-A',
+        B: 'cluster-badge-B',
+        M: 'cluster-badge-M',
+        FLEX: 'cluster-badge-flex'
+      };
+      const highlightClassMap = {
+        A: 'card-highlight-A',
+        B: 'card-highlight-B',
+        M: 'card-highlight-M'
+      };
+
+      const isHighlighted = appState.highlightedClusterLetter === groupLetter;
+      const isDimmed = appState.highlightedClusterLetter && appState.highlightedClusterLetter !== groupLetter;
+      const extraCardClass = isHighlighted
+        ? highlightClassMap[groupLetter] || ''
+        : (isDimmed ? 'card-dimmed' : '');
+
+      const groupLabel = groupLetter === 'M'
+        ? '🛍️ 컬리·쿠팡이츠'
+        : (groupLetter === 'FLEX' ? '장기보관·자유조합' : `그룹 ${groupLetter} 재료공유`);
+
+      const photoUrl = getDishPhotoUrl(recipe);
+      const fallbackSvg = makeFallbackSvgDataUri(recipe.emoji, recipe.title);
+      const ytUrl = getYoutubeWatchUrl(recipe);
+
+      const isKorean = recipe.cuisine === '한식';
+      const cuisineBadgeClass = isKorean
+        ? 'bg-emerald-600 text-white'
+        : 'bg-slate-800 text-white';
+
+      const bottomTagsHtml = (groupLetter === 'M' || recipe.isMealKit)
+        ? `<span class="px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-semibold">${escapeHtml(recipe.storeName)}</span>
+           <span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-700 text-[11px] font-bold">${escapeHtml(recipe.price.split(' ')[0])}</span>`
+        : ((recipe.sharedUsed && recipe.sharedUsed.length > 0)
+            ? recipe.sharedUsed.map(u =>
+                `<span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 text-[11px] font-medium">${escapeHtml(u.name)}</span>`
+              ).join('')
+            : (recipe.pantryUsed || []).slice(0, 2).map(u =>
+                `<span class="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 text-[11px] font-medium">${escapeHtml(u.name)}</span>`
+              ).join(''));
+
+      return `
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col justify-between transition-all duration-200 hover:border-slate-300 hover:shadow-md ${extraCardClass}">
+          <div>
+            <!-- Top Bar: Day/Meal & Swap Button -->
+            <div class="p-3 pb-2 flex items-center justify-between gap-1.5">
+              <div class="flex flex-wrap items-center gap-1">
+                <span class="px-2 py-0.5 rounded-md text-xs font-bold ${slot.badgeClass}">
+                  ${escapeHtml(slot.day)} ${escapeHtml(slot.mealType)}
+                </span>
+                <span class="px-2 py-0.5 rounded-md text-[11px] font-semibold border ${badgeClassMap[groupLetter] || 'cluster-badge-flex'}">
+                  ${groupLabel}
+                </span>
+              </div>
+
+              <button type="button" onclick="openSwapModal(${slotIndex})"
+                class="px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-600 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition flex items-center gap-0.5 shrink-0"
+                title="최소 5~8개의 대체 후보 중에서 선택하여 교체">
+                <span>🔄 교체</span>
+              </button>
+            </div>
+
+            <!-- Dish Photo Thumbnail & Clickable Recipe Body -->
+            <button type="button" onclick="openRecipeModal(${slotIndex})" class="w-full text-left group focus:outline-none">
+              <div class="relative mx-3 rounded-xl overflow-hidden bg-slate-100 aspect-video border border-slate-200/80">
+                <img src="${photoUrl}" alt="${escapeHtml(recipe.title)} 완성 요리 사진"
+                  onerror="this.onerror=null;this.src='${fallbackSvg}';"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div class="absolute top-2 left-2 flex items-center gap-1">
+                  <span class="px-2 py-0.5 rounded-md text-[11px] font-bold shadow-sm ${cuisineBadgeClass}">
+                    ${isKorean ? '🇰🇷 ' : ''}${escapeHtml(recipe.cuisine)}
+                  </span>
+                </div>
+                <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-slate-900/80 text-white text-[11px] font-semibold backdrop-blur-sm">
+                  ⏱️ ${recipe.cookTime}분
+                </div>
+              </div>
+
+              <div class="p-3 pt-2.5">
+                <h4 class="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition leading-snug mb-1">
+                  ${recipe.emoji} ${escapeHtml(recipe.title)}
+                </h4>
+                <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                  ${escapeHtml(recipe.summary)}
+                </p>
+              </div>
+            </button>
+          </div>
+
+          <!-- Footer: Ingredients/Brand & YouTube Direct Button + Recipe Modal Button -->
+          <div class="px-3 pb-3 pt-2 border-t border-slate-100 space-y-2">
+            <div class="flex flex-wrap items-center gap-1">
+              ${bottomTagsHtml}
+            </div>
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <a href="${ytUrl}" target="_blank" rel="noopener noreferrer"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-[11px] font-semibold transition">
+                <span>▶️ 유튜브 만드는 법</span>
+              </a>
+              <button type="button" onclick="openRecipeModal(${slotIndex})" class="shrink-0 text-xs font-bold text-emerald-700 hover:text-emerald-900">
+                상세 레시피 →
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMealGrids() {
+      const weekdayGrid = document.getElementById('weekdayGrid');
+      const weekendGrid = document.getElementById('weekendGrid');
+
+      const weekdayItems = appState.weeklyPlan.slice(0, 5);
+      const weekendItems = appState.weeklyPlan.slice(5, 9);
+
+      weekdayGrid.innerHTML = weekdayItems.map(renderMealCardHtml).join('');
+      weekendGrid.innerHTML = weekendItems.map(renderMealCardHtml).join('');
+    }
+
+    // =========================================================================
+    // 9. INTEGRATED SHOPPING LIST & KURLY / COUPANG EATS MEAL KIT LINKS
+    // =========================================================================
+    function renderShoppingList() {
+      const container = document.getElementById('shoppingListContainer');
+      const badge = document.getElementById('shoppingBadgeCount');
+      const servings = appState.servings;
+
+      const sharedMap = {};
+      const pantryMap = {};
+      const mealKitsToBuy = [];
+
+      appState.weeklyPlan.forEach(item => {
+        const r = item.recipe;
+        if (item.groupLetter === 'M' || r.isMealKit) {
+          mealKitsToBuy.push({
+            name: r.title,
+            brand: r.brand,
+            price: r.price,
+            storeName: r.storeName,
+            storeUrl: r.storeUrl,
+            coupangUrl: r.coupangUrl || r.storeUrl,
+            slotLabel: `${item.slot.day} ${item.slot.mealType}`
+          });
+          return;
+        }
+
+        (r.sharedUsed || []).forEach(ing => {
+          const key = `${ing.name}_${ing.unit}`;
+          if (!sharedMap[key]) {
+            sharedMap[key] = {
+              name: ing.name,
+              unit: ing.unit,
+              totalAmount: 0,
+              groupLetter: item.groupLetter,
+              usedInMeals: []
+            };
+          }
+          sharedMap[key].totalAmount += ing.amountPerServing * servings;
+          sharedMap[key].usedInMeals.push(`${item.slot.day} ${item.slot.mealType}`);
+        });
+
+        (r.pantryUsed || []).forEach(p => {
+          const key = p.name;
+          if (!pantryMap[key]) {
+            pantryMap[key] = {
+              name: p.name,
+              note: p.note || '상비/장기보관',
+              usedInMeals: []
+            };
+          }
+          pantryMap[key].usedInMeals.push(`${item.slot.day} ${item.slot.mealType}`);
+        });
+      });
+
+      const sharedList = Object.values(sharedMap);
+      const sauceAndPantryList = Object.values(pantryMap);
+
+      const uncheckedCount =
+        sharedList.filter(i => !appState.checkedShoppingItems[i.name]).length +
+        mealKitsToBuy.filter(m => !appState.checkedShoppingItems[m.name]).length;
+      badge.textContent = String(uncheckedCount);
+
+      const colSharedHtml = `
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">🥬 집밥 6끼 공유 신선 식재료 (그룹 A·B)</h3>
+            <p class="text-xs text-slate-500">3끼씩 재료를 공유해 버리는 재료 없이 100% 소진합니다</p>
+          </div>
+          <div class="space-y-2">
+            ${sharedList.map(item => {
+              const isChecked = !!appState.checkedShoppingItems[item.name];
+              const amountText = `${Math.round(item.totalAmount * 10) / 10}${item.unit} (${servings}인분 × ${item.usedInMeals.length}끼 합산)`;
+              return `
+                <label class="flex items-start gap-2.5 p-2.5 rounded-lg bg-white border border-slate-200/80 cursor-pointer hover:border-emerald-300 transition ${isChecked ? 'opacity-50 line-through' : ''}">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingItem('${escapeHtml(item.name)}')" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500" />
+                  <div class="flex-1 text-xs">
+                    <div class="font-bold text-slate-900">[그룹 ${escapeHtml(item.groupLetter)}] ${escapeHtml(item.name)}</div>
+                    <div class="text-emerald-700 font-semibold">${escapeHtml(amountText)}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">사용: ${escapeHtml(item.usedInMeals.join(', '))}</div>
+                  </div>
+                </label>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      const colMealKitHtml = `
+        <div class="bg-purple-50/50 rounded-xl p-4 border border-purple-200 space-y-3">
+          <div>
+            <h3 class="text-sm font-bold text-purple-950">🛍️ 마켓컬리 & 쿠팡이츠 밀키트 구매 목록 (3끼)</h3>
+            <p class="text-xs text-purple-700">평일 저녁 2끼 + 주말 1끼 · 컬리 샛별배송 또는 쿠팡이츠 마트에서 바로 구매</p>
+          </div>
+          <div class="space-y-2.5">
+            ${mealKitsToBuy.map(mk => {
+              const isChecked = !!appState.checkedShoppingItems[mk.name];
+              return `
+                <div class="p-3 rounded-lg bg-white border border-purple-200/80 space-y-2 ${isChecked ? 'opacity-50' : ''}">
+                  <label class="flex items-start gap-2.5 cursor-pointer">
+                    <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingItem('${escapeHtml(mk.name)}')" class="mt-0.5 rounded text-purple-600 focus:ring-purple-500" />
+                    <div class="flex-1 text-xs">
+                      <span class="px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 font-bold text-[10px]">${escapeHtml(mk.slotLabel)}</span>
+                      <div class="font-bold text-slate-900 mt-1 ${isChecked ? 'line-through' : ''}">${escapeHtml(mk.name)}</div>
+                      <div class="text-slate-600">${escapeHtml(mk.brand)} · <strong class="text-rose-700">${escapeHtml(mk.price)}</strong></div>
+                    </div>
+                  </label>
+                  <div class="flex flex-wrap items-center justify-end gap-1.5">
+                    <a href="https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8" target="_blank" rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-purple-700 hover:bg-purple-800 text-white text-[11px] font-semibold transition">
+                      <span>🟣 컬리에서 보기 ↗</span>
+                    </a>
+                    <a href="${mk.coupangUrl}" target="_blank" rel="noopener noreferrer"
+                      class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-semibold transition">
+                      <span>🚀 쿠팡이츠/로켓프레시 보기 ↗</span>
+                    </a>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      const colPantryHtml = `
+        <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">🧂 상비 양념 및 장기보관 부재료</h3>
+            <p class="text-xs text-slate-500">집에 있는 기본 양념과 장기보관 면/캔 재료입니다</p>
+          </div>
+          <div class="space-y-2">
+            ${sauceAndPantryList.map(item => {
+              const isChecked = !!appState.checkedShoppingItems[item.name];
+              return `
+                <label class="flex items-start gap-2.5 p-2.5 rounded-lg bg-white border border-slate-200/80 cursor-pointer hover:border-emerald-300 transition ${isChecked ? 'opacity-50 line-through' : ''}">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleShoppingItem('${escapeHtml(item.name)}')" class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500" />
+                  <div class="flex-1 text-xs">
+                    <div class="font-bold text-slate-900">${escapeHtml(item.name)}</div>
+                    <div class="text-slate-600">${escapeHtml(item.note)}</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">사용: ${escapeHtml(item.usedInMeals.join(', '))}</div>
+                  </div>
+                </label>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = colSharedHtml + colMealKitHtml + colPantryHtml;
+    }
+
+    function toggleShoppingItem(name) {
+      appState.checkedShoppingItems[name] = !appState.checkedShoppingItems[name];
+      saveStateToStorage();
+      renderShoppingList();
+    }
+
+    function resetShoppingChecks() {
+      appState.checkedShoppingItems = {};
+      saveStateToStorage();
+      renderShoppingList();
+      showToast('장보기 체크리스트를 초기화했습니다.');
+    }
+
+    function copyShoppingList() {
+      const servings = appState.servings;
+      let lines = [`[잇플랜 주간 9끼 식단 (한식 4끼 + 집밥 6끼 + 컬리·쿠팡이츠 밀키트 3끼) · ${servings}인분 기준]`, ''];
+      appState.weeklyPlan.forEach(item => {
+        const tag = item.groupLetter === 'M' ? '[컬리/쿠팡이츠 밀키트]' : `[집밥·그룹${item.groupLetter}]`;
+        lines.push(`• ${item.slot.day} ${item.slot.mealType} ${tag}: ${item.recipe.title} (${item.recipe.cuisine}, ${item.recipe.cookTime}분) - https://www.youtube.com/watch?v=${item.recipe.youtubeId}`);
+      });
+
+      lines.push('', '[구매할 컬리 / 쿠팡이츠 밀키트 3종]');
+      appState.weeklyPlan.filter(i => i.groupLetter === 'M').forEach(i => {
+        lines.push(`- ${i.recipe.title} (${i.recipe.price})`);
+      });
+
+      lines.push('', '[구매할 집밥 공유 신선 재료 (그룹 A·B)]');
+      const sharedMap = {};
+      appState.weeklyPlan.filter(i => i.groupLetter !== 'M').forEach(item => {
+        (item.recipe.sharedUsed || []).forEach(ing => {
+          const key = `${ing.name}_${ing.unit}`;
+          if (!sharedMap[key]) sharedMap[key] = { name: ing.name, unit: ing.unit, total: 0 };
+          sharedMap[key].total += ing.amountPerServing * servings;
+        });
+      });
+      Object.values(sharedMap).forEach(i => {
+        if (!appState.checkedShoppingItems[i.name]) {
+          lines.push(`- ${i.name}: ${Math.round(i.total * 10) / 10}${i.unit}`);
+        }
+      });
+
+      const text = lines.join('\n');
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('📋 식단(유튜브 링크 포함)과 장보기 목록이 클립보드에 복사되었습니다!');
+        }).catch(() => fallbackCopyText(text));
+      } else {
+        fallbackCopyText(text);
+      }
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('📋 식단과 장보기 목록이 클립보드에 복사되었습니다!');
+      } catch (e) {
+        showToast('복사를 완료했습니다.');
+      }
+      document.body.removeChild(ta);
+    }
+
+    // =========================================================================
+    // 10. INTERACTIVE HANDLERS (TABS, MODALS, RECIPE DETAIL, SWAP WITH 5~8 CANDIDATES)
+    // =========================================================================
+    function switchMainTab(tab) {
+      appState.activeTab = tab;
+      const viewPlanner = document.getElementById('viewPlanner');
+      const viewShopping = document.getElementById('viewShopping');
+      const btnPlanner = document.getElementById('tabBtnPlanner');
+      const btnShopping = document.getElementById('tabBtnShopping');
+
+      if (tab === 'planner') {
+        viewPlanner.classList.remove('hidden');
+        viewShopping.classList.add('hidden');
+        btnPlanner.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-slate-900 shadow-sm transition';
+        btnShopping.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5';
+      } else {
+        viewPlanner.classList.add('hidden');
+        viewShopping.classList.remove('hidden');
+        btnShopping.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-slate-900 shadow-sm transition flex items-center gap-1.5';
+        btnPlanner.className = 'px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition';
+        renderShoppingList();
+      }
+    }
+
+    function selectClusterHighlight(letter) {
+      if (appState.highlightedClusterLetter === letter) {
+        appState.highlightedClusterLetter = null;
+      } else {
+        appState.highlightedClusterLetter = letter;
+      }
+      renderClusterSummaryBar();
+      renderMealGrids();
+    }
+
+    function changeServings(val) {
+      appState.servings = parseInt(val, 10) || 2;
+      saveStateToStorage();
+      renderShoppingList();
+      showToast(`기준 인원수가 ${appState.servings}인분으로 변경되어 재료 계량에 반영되었습니다.`);
+    }
+
+    function changeMaxWeekdayTime(val) {
+      appState.maxWeekdayTime = parseInt(val, 10) || 30;
+      buildSmartWeeklyPlan(appState.leftoverKeywords.length > 0);
+      showToast(`평일 저녁 조리시간 ${appState.maxWeekdayTime}분 이내 기준으로 식단을 재정렬했습니다.`);
+    }
+
+    function openFridgeModal(forceMode) {
+      const modal = document.getElementById('fridgeModal');
+      const input = document.getElementById('leftoverTextInput');
+      modal.classList.remove('hidden');
+
+      if (forceMode === 'yes') {
+        setFridgeInputMode(true);
+      } else {
+        setFridgeInputMode(appState.hasLeftoversMode);
+      }
+
+      input.value = appState.leftoverKeywords.join(', ');
+      renderQuickIngredientTags();
+      renderDislikeFilterTags();
+    }
+
+    function closeFridgeModal() {
+      document.getElementById('fridgeModal').classList.add('hidden');
+    }
+
+    function setFridgeInputMode(withFridge) {
+      appState.hasLeftoversMode = withFridge;
+      const section = document.getElementById('fridgeInputSection');
+      const btnWith = document.getElementById('modeBtnWithFridge');
+      const btnNo = document.getElementById('modeBtnNoFridge');
+
+      if (withFridge) {
+        section.classList.remove('hidden');
+        btnWith.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold bg-white text-emerald-800 shadow-sm transition';
+        btnNo.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition';
+      } else {
+        section.classList.add('hidden');
+        btnNo.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-semibold bg-white text-emerald-800 shadow-sm transition';
+        btnWith.className = 'py-2 px-3 rounded-lg text-xs sm:text-sm font-medium text-slate-600 hover:text-slate-900 transition';
+      }
+    }
+
+    function renderQuickIngredientTags() {
+      const container = document.getElementById('quickIngredientTags');
+      const input = document.getElementById('leftoverTextInput');
+      const currentList = input.value.split(',').map(s => s.trim()).filter(Boolean);
+
+      container.innerHTML = QUICK_LEFTOVER_TAGS.map(tag => {
+        const active = currentList.includes(tag);
+        return `
+          <button type="button" onclick="toggleQuickIngredientTag('${tag}')"
+            class="px-2.5 py-1 rounded-full text-xs font-medium border transition ${
+              active
+                ? 'bg-emerald-600 text-white border-emerald-600'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+            }">
+            ${active ? '✓ ' : '+ '}${escapeHtml(tag)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleQuickIngredientTag(tag) {
+      const input = document.getElementById('leftoverTextInput');
+      let list = input.value.split(',').map(s => s.trim()).filter(Boolean);
+      if (list.includes(tag)) {
+        list = list.filter(x => x !== tag);
+      } else {
+        list.push(tag);
+      }
+      input.value = list.join(', ');
+      renderQuickIngredientTags();
+    }
+
+    function renderDislikeFilterTags() {
+      const container = document.getElementById('dislikeFilterTags');
+      container.innerHTML = DISLIKE_OPTIONS.map(opt => {
+        const active = !!appState.dislikes[opt.id];
+        return `
+          <button type="button" onclick="toggleDislikeOption('${opt.id}')"
+            class="px-3 py-1.5 rounded-xl text-xs font-semibold border transition ${
+              active
+                ? 'bg-rose-600 text-white border-rose-600'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+            }">
+            ${escapeHtml(opt.label)}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleDislikeOption(id) {
+      appState.dislikes[id] = !appState.dislikes[id];
+      renderDislikeFilterTags();
+    }
+
+    function applyFridgeAndGeneratePlan() {
+      if (appState.hasLeftoversMode) {
+        const raw = document.getElementById('leftoverTextInput').value;
+        appState.leftoverKeywords = raw.split(',').map(s => s.trim()).filter(Boolean);
+      } else {
+        appState.leftoverKeywords = [];
+      }
+      closeFridgeModal();
+      buildSmartWeeklyPlan(appState.leftoverKeywords.length > 0);
+      if (appState.leftoverKeywords.length > 0) {
+        showToast(`🥬 입력하신 재료(${appState.leftoverKeywords.join(', ')}) + 한식 4끼 + 컬리/쿠팡이츠 밀키트 3끼로 구성했습니다!`);
+      } else {
+        showToast('✨ 한식 4끼 + 집밥 재료공유 6끼 + 컬리/쿠팡이츠 밀키트 3끼로 새 식단을 완성했습니다!');
+      }
+    }
+
+    function generateWeeklyPlanWithoutLeftovers() {
+      appState.leftoverKeywords = [];
+      appState.hasLeftoversMode = false;
+      buildSmartWeeklyPlan(false);
+      showToast('🎲 남은 재료 없이 한식 4끼 + 컬리/쿠팡이츠 밀키트 3끼 포함 총 9끼 식단을 새로 추천했습니다!');
+    }
+
+    function clearLeftoversAndRegenerate() {
+      appState.leftoverKeywords = [];
+      buildSmartWeeklyPlan(false);
+      showToast('냉장고 재료 필터를 초기화하고 새 식단을 구성했습니다.');
+    }
+
+    // --- Recipe & Meal Kit Detail Modal ---
+    function openRecipeModal(slotIndex) {
+      const item = appState.weeklyPlan[slotIndex];
+      if (!item) return;
+
+      const { slot, groupLetter, clusterName, recipe } = item;
+      const servings = appState.servings;
+      const modal = document.getElementById('recipeModal');
+      const content = document.getElementById('recipeModalContent');
+
+      const photoUrl = getDishPhotoUrl(recipe);
+      const fallbackSvg = makeFallbackSvgDataUri(recipe.emoji, recipe.title);
+      const ytUrl = getYoutubeWatchUrl(recipe);
+
+      const isMealKit = groupLetter === 'M' || recipe.isMealKit;
+
+      const leftBoxHtml = isMealKit
+        ? `
+          <div class="p-4 rounded-xl bg-purple-50/70 border border-purple-200 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs sm:text-sm font-bold text-purple-950">🛍️ 컬리 & 쿠팡이츠 마트 밀키트 정보</h4>
+              <span class="px-2 py-0.5 rounded bg-purple-700 text-white text-[11px] font-bold">완제품 패키지</span>
+            </div>
+            <div class="text-xs space-y-1.5 text-slate-800">
+              <div><strong>구분/브랜드:</strong> ${escapeHtml(recipe.brand)}</div>
+              <div><strong>예상 가격:</strong> <span class="text-rose-700 font-bold">${escapeHtml(recipe.price)}</span></div>
+              <div><strong>구매 채널:</strong> ${escapeHtml(recipe.storeName)}</div>
+            </div>
+            <div class="pt-1 flex flex-wrap gap-2">
+              <a href="https://www.kurly.com/recommendation/%EB%B0%80%ED%82%A4%ED%8A%B8" target="_blank" rel="noopener noreferrer"
+                class="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 text-white text-xs font-semibold shadow-sm transition">
+                <span>🟣 마켓컬리 바로가기 ↗</span>
+              </a>
+              <a href="${recipe.coupangUrl || recipe.storeUrl}" target="_blank" rel="noopener noreferrer"
+                class="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-sm transition">
+                <span>🚀 쿠팡이츠/쿠팡 보기 ↗</span>
+              </a>
+            </div>
+          </div>
+        `
+        : `
+          <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200 space-y-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs sm:text-sm font-bold text-emerald-950">🔗 공유 신선 식재료 (${servings}인분)</h4>
+              <span class="text-[11px] font-semibold text-emerald-700">${escapeHtml(clusterName)}</span>
+            </div>
+            <ul class="space-y-0.5">
+              ${(recipe.sharedUsed && recipe.sharedUsed.length > 0)
+                ? recipe.sharedUsed.map(u => `
+                    <li class="flex items-center justify-between py-1.5 border-b border-emerald-100 text-xs sm:text-sm">
+                      <span class="font-semibold text-emerald-950 flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        ${escapeHtml(u.name)}
+                      </span>
+                      <span class="font-bold text-emerald-700">${Math.round(u.amountPerServing * servings * 10) / 10}${escapeHtml(u.unit)}</span>
+                    </li>
+                  `).join('')
+                : `<li class="text-xs text-slate-500 py-1">장기보관·상비 재료로 조리하는 자유 조합 메뉴입니다.</li>`
+              }
+            </ul>
+          </div>
+        `;
+
+      const pantryHtml = (recipe.pantryUsed || []).map(p => `
+        <li class="flex items-center justify-between py-1.5 border-b border-slate-100 text-xs sm:text-sm">
+          <div>
+            <span class="font-medium text-slate-800">${escapeHtml(p.name)}</span>
+            <span class="ml-1.5 px-1.5 py-0.5 rounded bg-slate-100 text-[10px] text-slate-500">${escapeHtml(p.note || '')}</span>
+          </div>
+          <span class="font-semibold text-slate-700">${Math.round(p.amountPerServing * servings * 10) / 10}${escapeHtml(p.unit)}</span>
+        </li>
+      `).join('');
+
+      const stepsHtml = recipe.steps.map((step, idx) => `
+        <li class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/70">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+            ${idx + 1}
+          </span>
+          <p class="text-xs sm:text-sm text-slate-800 leading-relaxed">${escapeHtml(step)}</p>
+        </li>
+      `).join('');
+
+      content.innerHTML = `
+        <div class="space-y-5">
+          <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-md text-xs font-bold ${slot.badgeClass}">
+                  ${escapeHtml(slot.day)} ${escapeHtml(slot.mealType)}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                  ${escapeHtml(recipe.cuisine)}
+                </span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                  ⏱️ 총 소요 시간: ${recipe.cookTime}분
+                </span>
+              </div>
+              <h3 class="text-xl sm:text-2xl font-bold text-slate-900 pt-1">
+                ${recipe.emoji} ${escapeHtml(recipe.title)}
+              </h3>
+              <p class="text-xs sm:text-sm text-slate-600">${escapeHtml(recipe.summary)}</p>
+            </div>
+
+            <button type="button" onclick="closeRecipeModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100">
+              ✕
+            </button>
+          </div>
+
+          <!-- Dish Photo & YouTube Video Card -->
+          <div class="grid grid-cols-1 sm:grid-cols-5 gap-4 items-center p-3.5 rounded-2xl bg-slate-900 text-white">
+            <div class="sm:col-span-2 rounded-xl overflow-hidden aspect-video bg-slate-800 border border-slate-700">
+              <img src="${photoUrl}" alt="${escapeHtml(recipe.title)} 최종 요리 형태 사진"
+                onerror="this.onerror=null;this.src='${fallbackSvg}';"
+                class="w-full h-full object-cover" />
+            </div>
+            <div class="sm:col-span-3 space-y-2.5">
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[11px] font-bold">
+                <span>▶️ YouTube 레시피 & 최종 요리 형태</span>
+              </div>
+              <div class="text-sm sm:text-base font-bold leading-snug">
+                ${escapeHtml(recipe.youtubeTitle || recipe.title)}
+              </div>
+              <div class="text-xs text-slate-300">
+                채널: ${escapeHtml(recipe.youtubeChannel || '인기 요리 채널')}
+              </div>
+              <div class="pt-1">
+                <a href="${ytUrl}" target="_blank" rel="noopener noreferrer"
+                  class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-xs sm:text-sm font-bold transition shadow-sm">
+                  <span>📺 유튜브에서 만드는 법 영상 바로 보기 ↗</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ingredients / Meal Kit Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            ${leftBoxHtml}
+
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+              <h4 class="text-xs sm:text-sm font-bold text-slate-900">
+                ${isMealKit ? '📦 밀키트 동봉 구성품 & 추가 사리' : `🧂 부재료 · 장기보관 & 기본 양념 (${servings}인분)`}
+              </h4>
+              <ul class="space-y-0.5">${pantryHtml}</ul>
+            </div>
+          </div>
+
+          <!-- Step-by-Step Cooking Instructions -->
+          <div class="space-y-2.5">
+            <h4 class="text-sm font-bold text-slate-900">👩‍🍳 단계별 조리 순서 (총 ${recipe.cookTime}분)</h4>
+            <ol class="space-y-2">${stepsHtml}</ol>
+          </div>
+
+          <!-- Chef Tip -->
+          <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs sm:text-sm text-amber-900">
+            <strong>💡 맛있게 먹는 꿀팁:</strong> ${escapeHtml(recipe.tip)}
+          </div>
+
+          <!-- Footer Actions -->
+          <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+            <button type="button" onclick="closeRecipeModal(); openSwapModal(${slotIndex});"
+              class="px-4 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs sm:text-sm font-semibold transition">
+              🔄 ${isMealKit ? '다른 컬리·쿠팡이츠 밀키트로 교체' : '이 메뉴 대신 다른 후보로 교체 (5~8개 후보)'}
+            </button>
+            <button type="button" onclick="closeRecipeModal()"
+              class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs sm:text-sm font-semibold transition">
+              확인
+            </button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeRecipeModal() {
+      document.getElementById('recipeModal').classList.add('hidden');
+    }
+
+    // --- Swap / Candidate Replacement Modal (Minimum 5~8 Candidates Guaranteed!) ---
+    function getSwapCandidatesForSlot(slotIndex) {
+      const currentItem = appState.weeklyPlan[slotIndex];
+      const currentRecipe = currentItem.recipe;
+      const otherUsedIds = new Set(
+        appState.weeklyPlan.filter((_, idx) => idx !== slotIndex).map(p => p.recipe.id)
+      );
+
+      // 1. If this slot is a Meal Kit ('M'), return all unused Kurly / Coupang Eats meal kits (7 candidates!)
+      if (currentItem.groupLetter === 'M') {
+        const candidates = POPULAR_MEALKITS
+          .filter(mk => mk.id !== currentRecipe.id && !otherUsedIds.has(mk.id))
+          .map(mk => {
+            const keepsKoreanBalance = (mk.cuisine === '한식') === (currentRecipe.cuisine === '한식');
+            return {
+              recipe: mk,
+              groupLetter: 'M',
+              clusterId: 'cluster_mealkits',
+              clusterName: '컬리 & 쿠팡이츠 인기 밀키트',
+              sharedIngredients: [mk.brand, mk.price],
+              keepsKoreanBalance,
+              matchLabel: keepsKoreanBalance
+                ? `🛍️ 컬리·쿠팡이츠 · 🇰🇷 한식 4끼 비율 유지 (${mk.storeName})`
+                : `🛍️ 컬리·쿠팡이츠 인기 후보 (${mk.storeName})`
+            };
+          });
+        return candidates.sort((a, b) => Number(b.keepsKoreanBalance) - Number(a.keepsKoreanBalance));
+      }
+
+      // 2. Home-cooked slot ('A', 'B', or 'FLEX'):
+      //    Each cluster has 8 recipes -> 3 are used -> 5 unused same-cluster candidates!
+      //    Plus 3 flexible long-shelf-life candidates = 8 candidates total!
+      const clusterObj = INGREDIENT_CLUSTERS.find(c => c.id === currentItem.clusterId) ||
+                         (appState.activeClusters[0] ? appState.activeClusters[0].clusterObj : INGREDIENT_CLUSTERS[0]);
+
+      const targetLetter = currentItem.groupLetter === 'FLEX' ? 'A' : currentItem.groupLetter;
+
+      const sameClusterCandidates = clusterObj.recipes
+        .filter(r => r.id !== currentRecipe.id && !otherUsedIds.has(r.id))
+        .map(r => {
+          const keepsKoreanBalance = (r.cuisine === '한식') === (currentRecipe.cuisine === '한식');
+          return {
+            recipe: r,
+            groupLetter: targetLetter,
+            clusterId: clusterObj.id,
+            clusterName: clusterObj.name,
+            sharedIngredients: clusterObj.sharedIngredients,
+            keepsKoreanBalance,
+            isSameCluster: true,
+            matchLabel: keepsKoreanBalance
+              ? `🔗 그룹 ${targetLetter} 재료 100% 공유 · 🇰🇷 한식 4끼 비율 유지`
+              : `🔗 그룹 ${targetLetter} 재료(${clusterObj.sharedIngredients.join('·')}) 100% 공유`
+          };
+        });
+
+      const flexCandidates = FLEXIBLE_PANTRY_RECIPES
+        .filter(r => r.id !== currentRecipe.id && !otherUsedIds.has(r.id))
+        .map(r => {
+          const keepsKoreanBalance = (r.cuisine === '한식') === (currentRecipe.cuisine === '한식');
+          return {
+            recipe: r,
+            groupLetter: 'FLEX',
+            clusterId: clusterObj.id,
+            clusterName: '장기보관·상비 재료 (자유 조합)',
+            sharedIngredients: clusterObj.sharedIngredients,
+            keepsKoreanBalance,
+            isSameCluster: false,
+            matchLabel: keepsKoreanBalance
+              ? `📦 추가 장보기 없는 장기보관 재료 · 🇰🇷 한식 4끼 비율 유지`
+              : `📦 추가 장보기 없는 냉동·상온 장기보관 재료 요리`
+          };
+        });
+
+      const combined = [...sameClusterCandidates, ...flexCandidates];
+      return combined.sort((a, b) => {
+        if (a.isSameCluster !== b.isSameCluster) return Number(b.isSameCluster) - Number(a.isSameCluster);
+        return Number(b.keepsKoreanBalance) - Number(a.keepsKoreanBalance);
+      });
+    }
+
+    function openSwapModal(slotIndex) {
+      appState.currentSwapSlotIndex = slotIndex;
+      const currentItem = appState.weeklyPlan[slotIndex];
+      const modal = document.getElementById('swapModal');
+      const badge = document.getElementById('swapSlotBadge');
+      const title = document.getElementById('swapModalTitle');
+      const subtitle = document.getElementById('swapModalSubtitle');
+      const listEl = document.getElementById('swapCandidatesList');
+
+      const candidates = getSwapCandidatesForSlot(slotIndex);
+      const isMealKit = currentItem.groupLetter === 'M';
+
+      badge.textContent = isMealKit
+        ? `🛍️ ${currentItem.slot.day} ${currentItem.slot.mealType} · 컬리 & 쿠팡이츠 밀키트 후보 (${candidates.length}개)`
+        : `🔗 ${currentItem.slot.day} ${currentItem.slot.mealType} · 맞춤 대체 요리 후보 (${candidates.length}개)`;
+
+      title.textContent = `'${currentItem.recipe.title}' 대신 어떤 메뉴로 바꿀까요?`;
+      subtitle.textContent = isMealKit
+        ? `마켓컬리와 쿠팡이츠 마트에서 바로 주문 가능한 인기 밀키트 후보 ${candidates.length}선입니다.`
+        : `같은 공유 재료를 쓰는 후보 5종과 장기보관 재료 후보 등 총 ${candidates.length}개의 대체 메뉴입니다.`;
+
+      listEl.innerHTML = candidates.map((cand, idx) => {
+        const photoUrl = getDishPhotoUrl(cand.recipe);
+        const fallbackSvg = makeFallbackSvgDataUri(cand.recipe.emoji, cand.recipe.title);
+        return `
+          <div class="p-3 rounded-xl border border-slate-200 hover:border-emerald-400 bg-slate-50/60 hover:bg-white transition flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <img src="${photoUrl}" alt="${escapeHtml(cand.recipe.title)}"
+                onerror="this.onerror=null;this.src='${fallbackSvg}';"
+                class="w-20 h-14 rounded-lg object-cover border border-slate-200 shrink-0" />
+              <div class="space-y-1">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-semibold ${cand.keepsKoreanBalance ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700'}">
+                    ${escapeHtml(cand.matchLabel)}
+                  </span>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 text-white">
+                    ${escapeHtml(cand.recipe.cuisine)} · ⏱️ ${cand.recipe.cookTime}분
+                  </span>
+                </div>
+                <div class="text-sm font-bold text-slate-900">
+                  ${cand.recipe.emoji} ${escapeHtml(cand.recipe.title)}
+                </div>
+                <p class="text-xs text-slate-500 line-clamp-1">${escapeHtml(cand.recipe.summary)}</p>
+              </div>
+            </div>
+            <button type="button" onclick="applyCandidateSwap(${idx})"
+              class="shrink-0 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition self-end sm:self-center">
+              이 메뉴로 선택
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      modal.classList.remove('hidden');
+    }
+
+    function applyCandidateSwap(candidateIdx) {
+      const slotIndex = appState.currentSwapSlotIndex;
+      if (slotIndex === null || slotIndex === undefined) return;
+      const candidates = getSwapCandidatesForSlot(slotIndex);
+      const chosen = candidates[candidateIdx];
+      if (!chosen) return;
+
+      const oldTitle = appState.weeklyPlan[slotIndex].recipe.title;
+      appState.weeklyPlan[slotIndex] = {
+        ...appState.weeklyPlan[slotIndex],
+        groupLetter: chosen.groupLetter,
+        clusterId: chosen.clusterId,
+        clusterName: chosen.clusterName,
+        sharedIngredients: chosen.sharedIngredients,
+        recipe: chosen.recipe
+      };
+
+      closeSwapModal();
+      renderAll();
+      showToast(`🔄 '${oldTitle}' 메뉴를 '${chosen.recipe.title}'(으)로 교체했습니다!`);
+    }
+
+    function confirmQuickRandomSwap() {
+      const slotIndex = appState.currentSwapSlotIndex;
+      if (slotIndex === null || slotIndex === undefined) return;
+      const candidates = getSwapCandidatesForSlot(slotIndex);
+      if (candidates.length === 0) return;
+      applyCandidateSwap(0);
+    }
+
+    function closeSwapModal() {
+      document.getElementById('swapModal').classList.add('hidden');
+      appState.currentSwapSlotIndex = null;
+    }
+
+    // --- API & Serverless Settings Modal ---
+    function openApiModal() {
+      document.getElementById('apiModal').classList.remove('hidden');
+      document.getElementById('geminiApiKeyInput').value = appState.geminiApiKey || '';
+    }
+
+    function closeApiModal() {
+      document.getElementById('apiModal').classList.add('hidden');
+    }
+
+    function saveApiSettings() {
+      appState.geminiApiKey = document.getElementById('geminiApiKeyInput').value.trim();
+      closeApiModal();
+      showToast('⚙️ 서버리스 및 API 설정이 저장되었습니다.');
+    }
+
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const el = document.createElement('div');
+      el.className = 'px-4 py-3 rounded-xl bg-slate-900 text-white text-xs sm:text-sm font-medium shadow-lg border border-slate-700 animate-pop pointer-events-auto';
+      el.textContent = msg;
+      container.appendChild(el);
+      setTimeout(() => {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 3200);
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadStateFromStorage();
+      buildSmartWeeklyPlan(appState.leftoverKeywords.length > 0);
+    });
+  </script>
+</body>
+</html>

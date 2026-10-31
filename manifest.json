@@ -1,0 +1,10 @@
+{
+  "name": "잇플랜(EatPlan) - 주간 9끼 스마트 식단 에이전트",
+  "short_name": "잇플랜",
+  "description": "한식 4끼 우선 · 집밥 6끼(재료공유) + 마켓컬리·쿠팡이츠 인기 밀키트 3끼 주간 식단 웹 앱",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#059669",
+  "lang": "ko-KR"
+}

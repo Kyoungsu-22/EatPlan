@@ -1,0 +1,11 @@
+{
+  "name": "eatplan-serverless",
+  "version": "1.0.0",
+  "private": true,
+  "description": "주간 9끼 스마트 식단 추천 서버리스 웹 앱 (한식 4끼 + 집밥 재료공유 6끼 + 컬리/쿠팡이츠 밀키트 3끼)",
+  "author": "k528ky@gmail.com",
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate_weekly_plan.mjs"
+  }
+}
