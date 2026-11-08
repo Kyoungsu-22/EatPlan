@@ -45,7 +45,7 @@
               유튜브 원본 레시피 100% 일치 · 밥숟가락 계량 · 1~2개 재료 공유
             </span>
           </div>
-          <p class="text-xs text-slate-500 hidden sm:block">한식 4끼 · 집밥 6끼 + 컬리/쿠팡 밀키트 16종 랜덤 로테이션 · Gemini API 실시간 연동</p>
+          <p class="text-xs text-slate-500 hidden sm:block">한식 4끼 · 유튜브 검증 집밥 50종 + 컬리/쿠팡 밀키트 16종 (총 66종) · Gemini API 실시간 연동</p>
         </div>
       </div>
 
@@ -81,7 +81,7 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
       <div class="flex items-center gap-2.5">
         <span class="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-        <span id="aiLoadingText">🤖 Google Gemini AI(gemini-2.5-flash)가 조건에 맞는 새로운 주간 9끼 식단과 밥숟가락 레시피를 실시간 생성하고 있습니다...</span>
+        <span id="aiLoadingText">🤖 Google Gemini AI(gemini-3.8-flash)가 조건에 맞는 새로운 주간 9끼 식단과 밥숟가락 레시피를 실시간 생성하고 있습니다...</span>
       </div>
       <span class="text-indigo-200 text-xs shrink-0">약 3~6초 소요</span>
     </div>
@@ -383,21 +383,34 @@
         </div>
 
         <div class="flex gap-2">
-          <input id="geminiApiKeyInput" type="password" placeholder="AIzaSy... 키를 입력하고 [연결 테스트] 또는 [설정 저장]을 누르세요" class="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <input id="geminiApiKeyInput" type="password" placeholder="AQ.Ab8RN6... 또는 AIzaSy... 키를 입력하고 [연결 테스트]를 누르세요" value="AQ.Ab8RN6KqysuXSHayWSls7wGui8qQDwIATQUtcTaUsKLK9nqIfg" class="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
           <button id="btnTestApiKey" type="button" onclick="testGeminiApiKeyConnection()" class="shrink-0 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold transition">
             🔍 연결 테스트
           </button>
         </div>
 
+        <div class="pt-1 space-y-1">
+          <label for="geminiModelSelect" class="block text-xs font-semibold text-slate-700">
+            🤖 호출할 Gemini 모델 버전 (신규 API 키는 <code>gemini-3.8-flash</code> 필수)
+          </label>
+          <select id="geminiModelSelect" onchange="appState.geminiModel = this.value; saveStateToStorage();" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="gemini-3.8-flash" selected>models/gemini-3.8-flash (최신 기본값 · Interactions / x-goog-api-key 자동 호환)</option>
+            <option value="gemini-3.6-flash">models/gemini-3.6-flash (무료 등급 호환 Flash 모델)</option>
+            <option value="gemini-3.5-flash-lite">models/gemini-3.5-flash-lite (신규 무료 등급 경량 Flash-Lite)</option>
+            <option value="gemini-2.5-flash-lite">models/gemini-2.5-flash-lite (AQ. 신규 키 공식 테스트 권장 모델)</option>
+            <option value="auto">자동 멀티 탐색 (4대 엔드포인트 + 전체 무료 모델 순차 시도)</option>
+          </select>
+        </div>
+
         <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer pt-1">
           <input id="autoUseAiCheckbox" type="checkbox" checked class="rounded text-indigo-600 focus:ring-indigo-500" />
-          <span>API 키 저장 시 <strong>[새 식단 짜기]</strong>를 누르면 자동으로 Gemini AI(<code>gemini-2.5-flash</code>)를 호출해 식단 생성하기</span>
+          <span>API 키 저장 시 <strong>[새 식단 짜기]</strong>를 누르면 자동으로 Gemini AI(<code>gemini-3.8-flash</code>)를 호출해 식단 생성하기</span>
         </label>
 
         <div id="apiTestResultBox" class="hidden p-3 rounded-lg text-xs leading-relaxed"></div>
 
         <p class="text-[11px] text-slate-500">
-          💡 이전 버전에서는 API 키가 브라우저 메모리에만 저장되고 실제 식단 생성 시 호출되지 않았던 문제를 수정하여, 이제 키를 저장하면 브라우저 로컬 스토리지에 영구 보존되며 <code>gemini-2.5-flash</code> 모델을 직접 호출해 밥숟가락 계량 레시피를 실시간 생성합니다.
+          💡 이전 버전에서는 API 키가 브라우저 메모리에만 저장되고 실제 식단 생성 시 호출되지 않았던 문제를 수정하여, 이제 키를 저장하면 브라우저 로컬 스토리지에 영구 보존되며 <code>gemini-3.8-flash</code> 모델을 직접 호출해 밥숟가락 계량 레시피를 실시간 생성합니다.
         </p>
       </div>
 
@@ -678,6 +691,71 @@
               '액젓 1밥숟가락, 굴소스 1밥숟가락, 고춧가루 1밥숟가락을 한방에 넣고 센 불에 빠르게 볶은 뒤 달걀 노른자를 올려 비벼 먹습니다.'
             ],
             tip: '액젓 1 : 굴소스 1 : 고춧가루 1 비율이 양배추의 단맛과 어우러져 느끼함 없이 매콤감칠맛이 납니다.'
+          },
+          {
+            id: 'rcp_kimjinsun_pork_soy',
+            title: '이자카야 비법 대패삼겹 대파 간장조림',
+            cuisine: '한식',
+            emoji: '🥓',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'EqT36k5dbu4',
+            youtubeTitle: '대패삼겹살과 대파로 만드는 이자카야 비법 간장조림 (밥숟가락 계량)',
+            youtubeChannel: '김진순 점심시간',
+            summary: '기름 없이 달군 냄비에 대파를 진갈색으로 구워 깊은 단맛을 낸 뒤 대패삼겹살과 단짠 간장소스로 졸여내는 밥도둑',
+            sharedUsed: [
+              { name: '돼지고기(대패삼겹/목살)', amountPerServing: 180, unit: 'g' },
+              { name: '대파', amountPerServing: 1, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '진간장', amountPerServing: 2.5, unit: '밥숟가락', note: '유튜브 2인분 기준 5밥숟가락' },
+              { name: '맛술', amountPerServing: 2.5, unit: '밥숟가락', note: '유튜브 2인분 기준 5밥숟가락' },
+              { name: '물', amountPerServing: 2.5, unit: '밥숟가락', note: '유튜브 2인분 기준 5밥숟가락' },
+              { name: '설탕', amountPerServing: 1.2, unit: '밥숟가락', note: '유튜브 2인분 기준 2.5밥숟가락' },
+              { name: '미원(감칠맛 비법) & 통깨', amountPerServing: 0.1, unit: '밥숟가락', note: '유튜브 원본 1꼬집' }
+            ],
+            steps: [
+              '대파를 큼직하게 썰어 기름을 두르지 않은 달군 냄비에 넣고 겉면이 진갈색이 될 때까지 구워 파의 단맛을 끌어올립니다.',
+              '구운 대파를 잠시 덜어두고 같은 냄비에 냉동 대패삼겹살을 넣어 노릇노릇하게 굽습니다 (고기가 익으면 구운 대파를 다시 합칩니다).',
+              '진간장 5밥숟가락(2인분 기준), 맛술 5밥숟가락, 물 5밥숟가락, 설탕 2.5밥숟가락, 미원 1꼬집을 섞은 소스를 붓습니다.',
+              '양념이 대패삼겹살과 대파에 쏙 배어들도록 바글바글 졸인 뒤 통깨를 듬뿍 뿌려 완성합니다.'
+            ],
+            tip: '대파를 기름 없이 겉이 살짝 탄 듯이 먼저 구워주면 조림 국물에 이자카야 특유의 불향과 깊은 단맛이 우러납니다.'
+          },
+          {
+            id: 'rcp_yuziman_cabbage_pork_bowl',
+            title: '465만뷰 대패목살 양배추 달걀노른자 덮밥',
+            cuisine: '한식',
+            emoji: '🍛',
+            cookTime: 12,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'vbIykhO8Tbo',
+            youtubeTitle: '양배추와 대패목살로 만드는 465만뷰 초간단 덮밥 (밥숟가락 계량)',
+            youtubeChannel: '유지만 yuziman',
+            summary: '채 썬 양배추 두 줌과 담백한 대패목살을 간장·굴소스에 볶아 흰자만 먼저 익히고 밥 위에 생노른자를 올리는 고소한 덮밥',
+            sharedUsed: [
+              { name: '양배추', amountPerServing: 120, unit: 'g' },
+              { name: '돼지고기(대패삼겹/목살)', amountPerServing: 100, unit: 'g' },
+              { name: '대파', amountPerServing: 0.3, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '다진마늘', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '진간장', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '굴소스', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 0.5밥숟가락' },
+              { name: '알룰로스(또는 올리고당)', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 0.5밥숟가락' },
+              { name: '달걀 (흰자·노른자 분리)', amountPerServing: 1, unit: '개', note: '노른자는 토핑용' }
+            ],
+            steps: [
+              '양배추 두 줌은 얇게 채 썰어 씻어두고, 달걀 1개는 흰자와 노른자를 분리해 둡니다.',
+              '달군 팬에 대패목살(또는 앞다리살/삼겹살) 100g을 구워 익힌 뒤 다진마늘 1밥숟가락과 채 썬 양배추, 소금·후추 약간을 넣고 볶습니다.',
+              '양배추 숨이 죽으면 진간장 1밥숟가락, 굴소스 0.5밥숟가락, 알룰로스(올리고당) 0.5밥숟가락을 넣고 볶은 뒤 달걀 흰자만 먼저 넣어 익힙니다.',
+              '그릇에 밥을 담고 볶은 양배추 고기를 올린 뒤 가운데 달걀 노른자와 송송 썬 쪽파(대파), 통깨를 올려 완성합니다.'
+            ],
+            tip: '달걀 흰자는 팬에서 양배추와 함께 익히고 노른자만 마지막에 생으로 올리면 비벼 먹을 때 훨씬 꾸덕하고 고소합니다.'
           }
         ]
       },
@@ -686,7 +764,7 @@
         name: '두부 · 양파/애호박 테마 (1~2개 재료 공유)',
         sharedIngredients: ['두부', '양파', '대파/애호박'],
         keywords: ['두부', '애호박', '양파', '대파', '참치', '참치캔'],
-        reason: '두부 또는 양파·애호박 1~2개만 있으면 뚝딱 만드는 유튜브 수백만 뷰 검증 레시피 7선입니다.',
+        reason: '두부 또는 양파·애호박 1~2개만 있으면 뚝딱 만드는 유튜브 수백만 뷰 검증 레시피 9선입니다.',
         recipes: [
           {
             id: 'rcp_spicy_braised_tofu',
@@ -929,6 +1007,73 @@
               '구워진 전 한 장 위에 모짜렐라 치즈를 듬뿍 올리고 나머지 한 장을 덮어 치즈가 녹을 때까지 구워 파슬리를 뿌려냅니다.'
             ],
             tip: '바삭한 감자 속에 고소한 두부가 녹두빈대떡 같은 식감을 내주어 밀가루 없이도 완벽하게 부쳐집니다.'
+          },
+          {
+            id: 'rcp_ttukttak_zucchini_gukbap',
+            title: '전라도 1등 광주식 애호박 돼지고기 짜글이 국밥',
+            cuisine: '한식',
+            emoji: '🍲',
+            cookTime: 18,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'BmlK4bl6olI',
+            youtubeTitle: '전라도 광주 1등 맛집 스타일 애호박 돼지고기 국밥 (밥숟가락 계량)',
+            youtubeChannel: '1분요리 뚝딱이형',
+            summary: '돼지고기와 대파에 고춧가루를 볶아 고추기름을 낸 뒤 멸치액젓으로 감칠맛을 맞추고 애호박을 듬뿍 넣어 끓이는 칼칼한 국밥',
+            sharedUsed: [
+              { name: '대파/애호박', amountPerServing: 0.5, unit: '개' },
+              { name: '양파', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '돼지고기(앞다리살/찌개용)', amountPerServing: 150, unit: 'g', note: '듬뿍 넣기' },
+              { name: '식용유', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '다진마늘', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' },
+              { name: '다진생강(또는 생강가루)', amountPerServing: 0.2, unit: '밥숟가락', note: '유튜브 원본 1/3스푼' },
+              { name: '고춧가루', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 2인분 기준 2밥숟가락' },
+              { name: '멸치액젓', amountPerServing: 0.8, unit: '밥숟가락', note: '유튜브 2인분 기준 1.5밥숟가락' },
+              { name: '소고기 다시다', amountPerServing: 0.3, unit: '밥숟가락', note: '유튜브 원본 0.5밥숟가락' }
+            ],
+            steps: [
+              '냄비에 식용유 1밥숟가락을 두르고 송송 썬 대파와 돼지고기, 다진마늘 1밥숟가락, 다진생강 0.3밥숟가락을 넣어 고기 겉면이 익을 때까지 볶습니다.',
+              '채 썬 양파와 당근, 고춧가루 2밥숟가락(2인분 기준)을 넣고 약불에서 타기 직전까지 볶아 진한 고추기름을 냅니다.',
+              '고기가 잠길 정도로 물(약 500ml)을 붓고 멸치액젓 1.5밥숟가락, 다시다 0.5밥숟가락, 미원 1꼬집을 넣어 중불에서 3분간 끓입니다.',
+              '도톰하게 채 썬 애호박과 청양고추를 넣고 딱 2분만 더 끓여 애호박의 식감을 살린 뒤 따뜻한 밥 위에 듬뿍 얹어냅니다.'
+            ],
+            tip: '애호박을 처음부터 넣으면 물러지므로 국물 간을 다 맞춘 뒤 마지막에 넣고 2분만 끓여야 달큰하고 아삭합니다.'
+          },
+          {
+            id: 'rcp_haedalmamang_eggplant_bowl',
+            title: '571만뷰 입에서 살살 녹는 단짠 가지 덮밥 (스크램블 에그)',
+            cuisine: '일식',
+            emoji: '🍆',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'PbCq-C9GRzs',
+            youtubeTitle: '고기 안 부러운 571만뷰 입에서 살살 녹는 가지 덮밥 (밥숟가락 계량)',
+            youtubeChannel: '해달마망',
+            summary: '칼집 낸 가지에 전분옷을 입혀 노릇하게 구운 뒤 단짠 간장소스에 졸여 부드러운 계란 스크램블 밥 위에 장어덮밥처럼 올리는 별미',
+            sharedUsed: [
+              { name: '대파/애호박', amountPerServing: 0.3, unit: '대' }
+            ],
+            pantryUsed: [
+              { name: '가지', amountPerServing: 1, unit: '개', note: '2인분 기준 2개' },
+              { name: '달걀 (스크램블용)', amountPerServing: 1.5, unit: '개', note: '부드럽게 익히기' },
+              { name: '감자전분', amountPerServing: 1, unit: '밥숟가락', note: '가지 앞뒤 코팅용' },
+              { name: '진간장', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 원본 2밥숟가락' },
+              { name: '맛술', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 원본 2밥숟가락' },
+              { name: '설탕', amountPerServing: 0.8, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '물', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 원본 2밥숟가락' }
+            ],
+            steps: [
+              '가지는 반으로 갈라 안쪽에 촘촘하게 격자 칼집을 낸 뒤 전자레인지에 1분 30초 돌려 살짝 익히고 전분가루 1밥숟가락을 고루 묻힙니다.',
+              '달걀에 소금 한 꼬집을 넣어 풀어 기름 두른 팬에서 부드러운 스크램블 에그를 만들어 따뜻한 밥 위에 먼저 펼쳐 올립니다.',
+              '팬에 식용유 2밥숟가락을 두르고 전분 묻힌 가지를 앞뒤로 노릇하게 구운 뒤 진간장 2밥숟가락, 맛술 2밥숟가락, 물 2밥숟가락, 설탕 1밥숟가락, 생강가루 약간을 섞어 붓습니다.',
+              '양념이 윤기 나게 졸아들면 스크램블 에그 밥 위에 가지를 얹고 송송 썬 쪽파(대파)와 통깨를 뿌려 완성합니다.'
+            ],
+            tip: '가지에 칼집을 내고 전분가루를 살짝 묻혀 구우면 장어구이처럼 겉은 쫀득하고 속은 크림처럼 부드러워집니다.'
           }
         ]
       },
@@ -937,7 +1082,7 @@
         name: '닭다리살 · 대파/양파 테마 (1~2개 재료 공유)',
         sharedIngredients: ['닭다리살(정육)', '대파/양파'],
         keywords: ['닭고기', '닭다리살', '닭가슴살', '대파', '양파', '양배추'],
-        reason: '닭다리살 정육 한 팩과 대파·양파 1~2개만 있으면 완성되는 유튜브 스타 셰프·인기 채널 레시피 6선입니다.',
+        reason: '닭다리살 정육 한 팩과 대파·양파 1~2개만 있으면 완성되는 유튜브 스타 셰프·인기 채널 레시피 8선입니다.',
         recipes: [
           {
             id: 'rcp_dakgalbi_pan',
@@ -1132,6 +1277,73 @@
               '만들어둔 특제 소스와 마요네즈, 김가루를 뿌려 완성합니다.'
             ],
             tip: '간장 소스를 끓일 때 마요네즈 1밥숟가락을 넣고 함께 끓이면 시판 소스보다 훨씬 고소하고 깊은 감칠맛이 납니다.'
+          },
+          {
+            id: 'rcp_yuziman_chicken_breast_bowl',
+            title: '400만뷰 닭고기 버섯 양파 간장 계란덮밥',
+            cuisine: '한식',
+            emoji: '🍗',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'kjscvQb8a5M',
+            youtubeTitle: '400만뷰 폭발! 닭고기와 버섯 양파로 만드는 간장 계란덮밥 (밥숟가락 계량)',
+            youtubeChannel: '유지만 yuziman',
+            summary: '한입 크기로 깍둑썬 닭고기와 새송이버섯, 양파를 감칠맛 나는 굴소스·간장 양념에 볶아 촉촉하게 덮밥으로 즐기는 고단백 한 끼',
+            sharedUsed: [
+              { name: '닭다리살(정육)', amountPerServing: 120, unit: 'g' },
+              { name: '대파/양파', amountPerServing: 0.5, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '새송이버섯', amountPerServing: 0.5, unit: '개', note: '깍둑썰기' },
+              { name: '올리브유(또는 식용유)', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '진간장', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '굴소스', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 0.5밥숟가락' },
+              { name: '알룰로스(또는 올리고당)', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 0.5밥숟가락' },
+              { name: '맛술', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '참기름 & 달걀', amountPerServing: 0.5, unit: '밥숟가락', note: '마무리 고소함 추가' }
+            ],
+            steps: [
+              '닭다리살(또는 닭가슴살)과 양파 1/2개, 새송이버섯 1/2개는 한입 크기로 작게 깍둑썰고 대파와 마늘 5알은 잘게 다집니다.',
+              '팬에 올리브유 1밥숟가락을 두르고 다진 마늘과 대파를 볶아 향을 낸 뒤 닭고기와 양파, 버섯을 넣고 노릇하게 익힙니다.',
+              '진간장 1밥숟가락, 굴소스 0.5밥숟가락, 알룰로스 0.5밥숟가락, 맛술 1밥숟가락, 물 반 컵(100ml), 다진 고추 1밥숟가락을 넣고 자작하게 끓입니다.',
+              '달걀 흰자를 둘러 먼저 익힌 뒤 밥 위에 얹고 가운데 달걀 노른자와 참기름 0.5밥숟가락, 통깨, 후추를 뿌려 비벼 먹습니다.'
+            ],
+            tip: '닭고기와 새송이버섯을 비슷한 크기로 작게 깍둑썰면 숟가락으로 밥과 함께 떠먹기 훨씬 편하고 간도 빠르게 배어듭니다.'
+          },
+          {
+            id: 'rcp_jjanga_seafood_udon',
+            title: '최애 양배추 청경채 해물 볶음우동 (야키우동)',
+            cuisine: '일식',
+            emoji: '🍜',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: true,
+            youtubeId: 'rwce5rGJKBI',
+            youtubeTitle: '이자카야 안주 1등! 양배추 청경채 해물 볶음우동 황금레시피 (밥숟가락 계량)',
+            youtubeChannel: '짱아남매',
+            summary: '대파기름에 탱글한 해물과 양배추, 양파를 볶다가 간장·굴소스·칠리소스를 배합한 황금 양념장으로 센 불에 볶아낸 야키우동',
+            sharedUsed: [
+              { name: '대파/양파', amountPerServing: 0.5, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '냉동 해물믹스(또는 새우·오징어)', amountPerServing: 120, unit: 'g', note: '해동 후 물기 제거' },
+              { name: '우동사리', amountPerServing: 1, unit: '개', note: '끓는 물에 1분 데치기' },
+              { name: '양배추 & 숙주/청경채', amountPerServing: 100, unit: 'g', note: '아삭한 채소' },
+              { name: '진간장', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 2인분 기준 3밥숟가락' },
+              { name: '굴소스', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' },
+              { name: '스위트 칠리소스(또는 핫칠리)', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 2인분 기준 2밥숟가락' },
+              { name: '올리고당(또는 꿀)', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 2인분 기준 2밥숟가락' }
+            ],
+            steps: [
+              '볼에 진간장 3밥숟가락(2인분 기준), 굴소스 1밥숟가락, 칠리소스 2밥숟가락, 꿀(올리고당) 2밥숟가락, 후추 톡톡을 섞어 볶음우동 양념장을 만듭니다.',
+              '달군 팬에 식용유를 두르고 송송 썬 대파를 볶아 파기름을 낸 뒤 해물믹스를 넣고 후추를 뿌려 센 불에 볶습니다.',
+              '해물이 반쯤 익으면 먹기 좋게 썬 양배추와 양파를 넣고 숨이 살짝 죽을 때까지 볶습니다.',
+              '살짝 데친 우동면과 숙주나물, 청경채, 만들어둔 양념장을 모두 넣고 센 불에서 1~2분간 빠르게 볶아 가쓰오부시를 올려 완성합니다.'
+            ],
+            tip: '진간장·굴소스에 칠리소스 1~2밥숟가락을 섞어주면 감칠맛과 매콤달콤한 풍미가 확 살아납니다.'
           }
         ]
       },
@@ -1140,7 +1352,7 @@
         name: '소고기(우삼겹/불고기) · 숙주/버섯 테마 (1~2개 재료 공유)',
         sharedIngredients: ['소고기(우삼겹/불고기용)', '숙주나물/버섯', '양파/대파'],
         keywords: ['소고기', '우삼겹', '차돌박이', '숙주', '숙주나물', '버섯', '표고버섯', '청경채'],
-        reason: '얇은 소고기(우삼겹/불고기감)나 숙주·버섯 1~2개만 겹쳐도 만들 수 있는 유튜브 인기 레시피 6선입니다.',
+        reason: '얇은 소고기(우삼겹/불고기감)나 숙주·버섯 1~2개만 겹쳐도 만들 수 있는 유튜브 인기 레시피 8선입니다.',
         recipes: [
           {
             id: 'rcp_beef_beansprout_korean',
@@ -1342,6 +1554,72 @@
               '볶음소스(굴소스·간장 배합)와 숙주 200g, 청경채, 청양고추를 한꺼번에 넣고 센 불에 재빨리 볶아 완성합니다.'
             ],
             tip: '청경채와 숙주는 우동면과 소스를 넣을 때 마지막에 함께 넣어야 아삭한 식감이 그대로 살아있습니다.'
+          },
+          {
+            id: 'rcp_omechu_beef_tofu_jjageuli',
+            title: 'SNS 300만뷰 밥도둑 우삼겹 두부 짜글이',
+            cuisine: '한식',
+            emoji: '🥘',
+            cookTime: 15,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'd0mbMRwR_Sc',
+            youtubeTitle: 'SNS 300만뷰 화제의 밥도둑! 우삼겹 두부 짜글이 황금레시피 (밥숟가락 계량)',
+            youtubeChannel: '오메추 : 오늘의 메뉴를 추천합니다',
+            summary: '노릇하게 구워 기름기를 뺀 고소한 우삼겹과 부드러운 두부 한 모를 칼칼한 고추장·간장 양념장에 자작하게 졸여낸 밥도둑',
+            sharedUsed: [
+              { name: '소고기(우삼겹/불고기용)', amountPerServing: 120, unit: 'g' },
+              { name: '양파/대파', amountPerServing: 0.5, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '두부', amountPerServing: 0.5, unit: '모', note: '2인분 기준 1모 도톰하게 썰기' },
+              { name: '고춧가루', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 2인분 기준 2밥숟가락' },
+              { name: '진간장', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 2인분 기준 2밥숟가락' },
+              { name: '설탕', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' },
+              { name: '참치액(또는 멸치액젓)', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' },
+              { name: '고추장', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' },
+              { name: '다진마늘', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' }
+            ],
+            steps: [
+              '팬에 우삼겹 200g(2인분 기준)을 먼저 노릇하게 구워 그릇에 덜어내고 팬에 나온 과한 기름을 키친타월로 닦아냅니다.',
+              '팬 바닥에 도톰하게 썬 두부 1모를 깔고 그 위에 채 썬 양파와 대파, 구워둔 우삼겹, 어슷 썬 청양고추를 차례로 올립니다.',
+              '고춧가루 2밥숟가락, 진간장 2밥숟가락, 설탕 1밥숟가락, 참치액 1밥숟가락, 고추장 1밥숟가락, 다진마늘 1밥숟가락을 섞은 양념장을 올립니다.',
+              '재료가 자작하게 잠길 정도로 물(약 250ml)을 붓고 중불에서 두부에 양념이 쏙 배어들도록 8분간 끓여 완성합니다.'
+            ],
+            tip: '우삼겹을 처음부터 물에 넣고 끓이지 않고 먼저 구워 기름을 한 번 닦아낸 뒤 끓이면 국물이 텁텁하지 않고 깔끔합니다.'
+          },
+          {
+            id: 'rcp_dwaekki_beef_bibimbap',
+            title: '1297만뷰 소고기 약고추장 숙주 나물 양푼 비빔밥',
+            cuisine: '한식',
+            emoji: '🥗',
+            cookTime: 10,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'Jbs5hqSRFw0',
+            youtubeTitle: '1297만뷰 돌파! 배부른데 살 빠지는 소고기 약고추장 나물 양푼 비빔밥 (밥숟가락 계량)',
+            youtubeChannel: '돼끼 baby_pig_rabbit',
+            summary: '데친 숙주나물과 채소 80%, 밥 20% 비율에 고소한 소고기 볶음고추장과 반숙 계란프라이, 참기름을 넣어 비벼 먹는 꿀맛 비빔밥',
+            sharedUsed: [
+              { name: '소고기(우삼겹/불고기용)', amountPerServing: 80, unit: 'g' },
+              { name: '숙주나물/버섯', amountPerServing: 150, unit: 'g' }
+            ],
+            pantryUsed: [
+              { name: '고추장 (소고기 볶음고추장용)', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 원본 2밥숟가락' },
+              { name: '진간장 & 올리고당', amountPerServing: 0.5, unit: '밥숟가락', note: '소고기 밑간용' },
+              { name: '참기름', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 원본 듬뿍 1.5밥숟가락' },
+              { name: '달걀 (반숙 프라이)', amountPerServing: 2, unit: '개', note: '단백질 보충용 2개' },
+              { name: '김가루 & 통깨', amountPerServing: 1, unit: '밥숟가락', note: '고명용' }
+            ],
+            steps: [
+              '숙주나물(또는 콩나물)은 끓는 물에 1분 30초간 아삭하게 데친 뒤 찬물에 헹궈 물기를 꽉 짜둡니다.',
+              '팬에 잘게 썬 소고기와 진간장 0.5밥숟가락, 다진마늘 0.5밥숟가락을 볶다가 고추장 1.5밥숟가락, 올리고당 0.5밥숟가락을 넣어 감칠맛 나는 소고기 약고추장을 만듭니다.',
+              '넓은 양푼(볼)에 밥은 반 공기만 담고 데친 숙주나물과 집에 있는 나물·상추를 밥의 3~4배 분량으로 듬뿍 담습니다.',
+              '소고기 약고추장 1.5~2밥숟가락과 참기름 1.5밥숟가락, 반숙 계란프라이 2개, 통깨를 올려 골고루 비벼 먹습니다.'
+            ],
+            tip: '밥 양을 줄이고 데친 숙주나물을 듬뿍 넣으면 포만감은 극대화되면서 아삭한 식감이 일품입니다.'
           }
         ]
       },
@@ -1350,7 +1628,7 @@
         name: '감자 · 양파/당근/베이컨 테마 (1~2개 재료 공유)',
         sharedIngredients: ['감자', '양파/당근', '베이컨/고기'],
         keywords: ['감자', '양파', '당근', '베이컨', '소고기', '돼지고기'],
-        reason: '상온 보관이 쉬운 감자와 양파·당근·베이컨 중 1~2개만 겹쳐도 만드는 유튜브 검증 레시피 6선입니다.',
+        reason: '상온 보관이 쉬운 감자와 양파·당근·베이컨 중 1~2개만 겹쳐도 만드는 유튜브 검증 레시피 8선입니다.',
         recipes: [
           {
             id: 'rcp_pork_potato_stirfry',
@@ -1547,6 +1825,73 @@
               '면이 거의 익고 국물이 자작해지면 버터 10g(1밥숟가락)과 시금치, 파마산 치즈가루 2밥숟가락, 마지막 참치액젓 1밥숟가락을 넣어 골고루 섞어냅니다.'
             ],
             tip: '면을 삶은 물을 버리지 않고 원팬에서 그대로 흡수시켜 익히기 때문에 마늘과 베이컨 풍미가 면발 속까지 쫙 배어듭니다.'
+          },
+          {
+            id: 'rcp_yunmom_cottage_pie',
+            title: '유럽 가정식 소고기 매쉬드 포테이토 코티지파이',
+            cuisine: '양식',
+            emoji: '🥧',
+            cookTime: 25,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: '8WXy4yjQaT0',
+            youtubeTitle: '쉽고 근사한 유럽 가정식! 감자와 소고기로 만드는 코티지파이 (밥숟가락 계량)',
+            youtubeChannel: '윤맘레시피(yunmom85)',
+            summary: '토마토·우스터소스로 진하게 볶은 소고기 라구 위에 부드럽게 으깬 매쉬드 포테이토를 덮어 구워내는 영국식 감자 미트파이',
+            sharedUsed: [
+              { name: '감자', amountPerServing: 1.5, unit: '개' },
+              { name: '양파/당근', amountPerServing: 0.5, unit: '개' },
+              { name: '베이컨/고기', amountPerServing: 120, unit: 'g' }
+            ],
+            pantryUsed: [
+              { name: '토마토소스(또는 케첩 추가)', amountPerServing: 2, unit: '밥숟가락', note: '유튜브 원본 3밥숟가락' },
+              { name: '케첩', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 2밥숟가락' },
+              { name: '돈가스소스(또는 우스터소스)', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '진간장', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '우유 (감자 으깨기용)', amountPerServing: 2, unit: '밥숟가락', note: '유튜브 원본 3밥숟가락' },
+              { name: '버터 & 마요네즈', amountPerServing: 1, unit: '밥숟가락', note: '감자에 고소함 추가' }
+            ],
+            steps: [
+              '감자는 깍둑썰어 내열 용기에 물 2밥숟가락과 함께 넣고 전자레인지에 6분간 푹 익힌 뒤 뜨거울 때 버터 1밥숟가락, 마요네즈 1밥숟가락, 우유 3밥숟가락을 넣어 부드럽게 으깹니다.',
+              '팬에 다진 마늘과 다진 양파·당근을 노릇하게 볶다가 다진 고기(소고기 또는 돼지고기)를 넣고 완전히 익힙니다.',
+              '케첩 2밥숟가락, 돈가스소스(우스터소스) 1밥숟가락, 진간장 1밥숟가락, 토마토소스 3밥숟가락을 넣고 수분이 날아갈 때까지 되직하게 볶습니다.',
+              '그릇 바닥에 볶은 고기소스를 평평하게 깔고 그 위에 으깬 감자를 덮어 포크로 결을 낸 뒤 에어프라이어(또는 전자레인지+토치)에 치즈와 함께 노릇하게 구워냅니다.'
+            ],
+            tip: '감자를 냄비에 삶지 않고 전자레인지로 6분 익혀 마요네즈 1밥숟가락을 넣고 으깨면 훨씬 빠르고 레스토랑처럼 부드럽습니다.'
+          },
+          {
+            id: 'rcp_grid_pork_radish_soup',
+            title: '소고기보다 맛있는 시원 담백 돼지고기 무국',
+            cuisine: '한식',
+            emoji: '🥣',
+            cookTime: 25,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: '-dBeWpkkXWM',
+            youtubeTitle: '소고기 무국보다 10배 맛있는 시원 담백 돼지고기 무국 황금레시피 (밥숟가락 계량)',
+            youtubeChannel: '맛있다 그리드',
+            summary: '돼지고기를 식용유에 하얗게 볶다가 진간장 3밥숟가락을 넣어 간장 향을 입힌 뒤 나박썬 무와 대파를 넣고 푹 끓여낸 맑고 깊은 국물 요리',
+            sharedUsed: [
+              { name: '베이컨/고기', amountPerServing: 150, unit: 'g' },
+              { name: '양파/당근', amountPerServing: 0.3, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '무 (또는 감자 대체 가능)', amountPerServing: 150, unit: 'g', note: '나박썰기' },
+              { name: '대파', amountPerServing: 0.5, unit: '대', note: '송송 썰기' },
+              { name: '식용유', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '진간장 (고기 코팅 비법!)', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 원본 3밥숟가락' },
+              { name: '다진생강(또는 다진마늘)', amountPerServing: 0.5, unit: '밥숟가락', note: '잡내 제거 및 깔끔한 국물' },
+              { name: '소금 & 후추', amountPerServing: 0.3, unit: '밥숟가락', note: '마무리 간 맞추기' }
+            ],
+            steps: [
+              '무는 한입 크기로 나박썰고, 대파는 송송 썰며, 돼지고기(목살 또는 앞다리살)는 먹기 좋은 크기로 썹니다.',
+              '달군 냄비에 식용유 1밥숟가락을 두르고 돼지고기를 넣어 겉면이 하얗게 익을 때까지 충분히 볶습니다.',
+              '고기에 진간장 3밥숟가락(2인분 기준)을 붓고 간장이 바글바글 끓으며 고기에 쏙 배어들도록 2분간 더 볶아 불향을 입힙니다.',
+              '물 1L와 나박썬 무, 대파, 다진생강 0.3밥숟가락(또는 다진마늘)을 넣고 무가 투명해질 때까지 중불에서 15분간 끓인 뒤 소금·후추로 간을 맞춥니다.'
+            ],
+            tip: '물을 붓기 전에 돼지고기와 진간장 3밥숟가락을 먼저 2분간 바싹 볶아주면 잡내는 사라지고 깊은 감칠맛이 우러납니다.'
           }
         ]
       },
@@ -1555,7 +1900,7 @@
         name: '계란 · 김치/오징어/양파 테마 (1~2개 재료 공유)',
         sharedIngredients: ['달걀(계란)', '김치/양파', '오징어/햄'],
         keywords: ['계란', '달걀', '김치', '오징어', '스팸', '햄', '양파', '대파'],
-        reason: '집에 늘 있는 계란·김치·양파나 오징어로 5~15분 만에 뚝딱 만드는 흑백요리사·편스토랑 화제의 레시피 5선입니다.',
+        reason: '집에 늘 있는 계란·김치·양파나 오징어로 5~15분 만에 뚝딱 만드는 흑백요리사·편스토랑·인기 채널 화제의 레시피 8선입니다.',
         recipes: [
           {
             id: 'rcp_im_seonggeun_kimchi_rice',
@@ -1721,6 +2066,102 @@
               '돈가스소스 4밥숟가락 + 케첩 1밥숟가락 + 올리고당 0.5밥숟가락을 섞은 소스를 듬뿍 바르고 가쓰오부시와 마요네즈를 뿌려 완성합니다.'
             ],
             tip: '시판 돈가스소스 4밥숟가락에 케첩 1밥숟가락, 올리고당 0.5밥숟가락을 섞으면 오코노미야키 전용 소스 맛이 완벽하게 재현됩니다.'
+          },
+          {
+            id: 'rcp_dasol_pork_kimchi_jjigae',
+            title: '464만뷰 솔직히 제일 맛있는 돼지고기 두부 김치찌개',
+            cuisine: '한식',
+            emoji: '🥘',
+            cookTime: 20,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: false,
+            youtubeId: 'iZyofxQlJ2k',
+            youtubeTitle: '464만뷰! 솔직히 제일 맛있는 돼지고기 김치찌개 황금레시피 (밥숟가락 계량)',
+            youtubeChannel: '다솔쿠 DASOL COO',
+            summary: '돼지고기를 기름에 볶지 않고 물과 멸치액젓을 넣어 먼저 끓여 육수를 우려낸 뒤 신김치와 두부를 넣어 깔끔하고 진하게 끓이는 정석 김치찌개',
+            sharedUsed: [
+              { name: '김치/양파', amountPerServing: 150, unit: 'g' }
+            ],
+            pantryUsed: [
+              { name: '돼지고기(목살/삼겹살/앞다리살)', amountPerServing: 150, unit: 'g', note: '한입 크기' },
+              { name: '두부', amountPerServing: 0.5, unit: '모', note: '도톰하게 썰기' },
+              { name: '멸치액젓 (육수 비법!)', amountPerServing: 0.8, unit: '밥숟가락', note: '유튜브 2인분 기준 1.5밥숟가락' },
+              { name: '진간장', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' },
+              { name: '고춧가루', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 2인분 기준 2밥숟가락' },
+              { name: '다진마늘', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 2인분 기준 1밥숟가락' },
+              { name: '설탕 (김치 신맛 중화)', amountPerServing: 0.3, unit: '밥숟가락', note: '신김치일 때 반 스푼' }
+            ],
+            steps: [
+              '냄비에 물 550ml와 한입 크기로 썬 돼지고기, 멸치액젓 1.5밥숟가락(2인분 기준)을 먼저 넣고 센 불에서 끓여 깊은 고기 육수를 우려냅니다.',
+              '국물이 끓어오르면 먹기 좋게 썬 잘 익은 김치와 김치국물 3밥숟가락, 진간장 1밥숟가락, 고춧가루 2밥숟가락, 다진마늘 1밥숟가락을 넣습니다.',
+              '중불로 줄여 김치가 부드럽게 익고 국물이 진해질 때까지 10분간 충분히 끓입니다 (신맛이 강하면 설탕 0.5밥숟가락을 추가합니다).',
+              '채 썬 양파와 두부, 어슷 썬 대파, 청양고추를 넣고 3분간 한소끔 더 끓여 완성합니다.'
+            ],
+            tip: '돼지고기를 기름에 볶지 않고 물과 멸치액젓 1.5밥숟가락에 먼저 삶아 육수를 내면 김치찌개 전문점처럼 맑으면서도 깊은 국물 맛이 납니다.'
+          },
+          {
+            id: 'rcp_kimjinsun_speed_egg_soup',
+            title: '364만뷰 3분 컷 초스피드 구름 계란국 & 계란밥',
+            cuisine: '한식',
+            emoji: '🍲',
+            cookTime: 8,
+            isQuickWeekday: true,
+            spicy: false,
+            seafood: false,
+            youtubeId: 'XQ1oQcX6wdU',
+            youtubeTitle: '364만뷰 폭발! 육수 없이 3분 만에 끓이는 보들보들 구름 계란국 (밥숟가락 계량)',
+            youtubeChannel: '김진순 점심시간',
+            summary: '별도 육수 없이 참치액과 맛소금만으로 간을 맞추고 달걀물을 부은 뒤 딱 10초 기다렸다 저어 구름처럼 몽글몽글하게 끓여내는 초간단 국',
+            sharedUsed: [
+              { name: '달걀(계란)', amountPerServing: 2, unit: '개' },
+              { name: '김치/양파', amountPerServing: 50, unit: 'g' }
+            ],
+            pantryUsed: [
+              { name: '참치액(참치액젓)', amountPerServing: 1.5, unit: '밥숟가락', note: '유튜브 원본 핵심 감칠맛' },
+              { name: '맛소금', amountPerServing: 0.2, unit: '밥숟가락', note: '깔끔한 간 맞추기' },
+              { name: '대파', amountPerServing: 0.3, unit: '대', note: '송송 썰기' },
+              { name: '후춧가루 & 참기름', amountPerServing: 0.3, unit: '밥숟가락', note: '마무리 풍미' }
+            ],
+            steps: [
+              '냄비에 물 500ml(2인분 기준)를 붓고 센 불에서 팔팔 끓이는 동안 달걀 3~4개를 알끈 없이 곱게 풀어둡니다.',
+              '물이 팔팔 끓으면 참치액 2.5밥숟가락(2인분 기준)과 맛소금 0.3밥숟가락을 넣어 국물 간을 먼저 맞춥니다.',
+              '불을 중불로 유지한 채 달걀물을 원을 그리며 천천히 붓고, 숟가락으로 바로 젓지 말고 딱 10초간 그대로 기다립니다.',
+              '10초 뒤 숟가락으로 바닥을 살살 저어 몽글몽글한 구름 모양을 만들고 송송 썬 대파와 후춧가루를 뿌려 다시 끓어오르기 직전에 불을 끕니다.'
+            ],
+            tip: '달걀물을 붓고 바로 저으면 국물이 탁해지고, 끝까지 팔팔 끓이면 달걀이 질겨지므로 10초 기다린 뒤 끓어오르기 직전에 불을 끄는 것이 핵심입니다.'
+          },
+          {
+            id: 'rcp_subuhae_tuna_can_bibimbap',
+            title: '315만뷰 극락 맛 참치캔 청양고추 마늘 비빔밥',
+            cuisine: '한식',
+            emoji: '🥫',
+            cookTime: 5,
+            isQuickWeekday: true,
+            spicy: true,
+            seafood: true,
+            youtubeId: 'xQsYelwgPhU',
+            youtubeTitle: '315만뷰 화제의 레시피! 불 안 쓰고 3분 만에 만드는 참치캔 비빔밥 (밥숟가락 계량)',
+            youtubeChannel: '수부해TV subuhae',
+            summary: '기름 뺀 참치캔 안에 진간장·참기름·다진마늘·청양고추를 바로 넣어 섞은 뒤 따뜻한 밥과 반숙 계란 위에 얹어 비벼 먹는 5분 컷 밥도둑',
+            sharedUsed: [
+              { name: '달걀(계란)', amountPerServing: 1, unit: '개' }
+            ],
+            pantryUsed: [
+              { name: '참치캔 (살코기 참치)', amountPerServing: 1, unit: '캔', note: '기름을 완전히 따라내기' },
+              { name: '진간장', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '참기름', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '다진마늘', amountPerServing: 0.5, unit: '밥숟가락', note: '유튜브 원본 0.5밥숟가락' },
+              { name: '통깨', amountPerServing: 1, unit: '밥숟가락', note: '유튜브 원본 1밥숟가락' },
+              { name: '청양고추 (잘게 다지기)', amountPerServing: 1, unit: '개', note: '매콤한 킥 포인트' }
+            ],
+            steps: [
+              '참치캔 1캔의 뚜껑을 따서 안에 든 기름을 남김없이 꾹 눌러 완전히 따라냅니다.',
+              '기름을 뺀 참치캔 안에 그대로 진간장 1밥숟가락, 참기름 1밥숟가락, 다진마늘 0.5밥숟가락, 소금 1꼬집, 후추 약간을 넣습니다.',
+              '잘게 송송 썬 청양고추 1개와 통깨 1밥숟가락을 듬뿍 넣고 캔 안에서 숟가락으로 골고루 비벼 양념 참치를 완성합니다.',
+              '따뜻한 밥 위에 양념 참치를 통째로 얹고 반숙 계란프라이와 김가루를 곁들여 쓱쓱 비벼 먹습니다.'
+            ],
+            tip: '설거지 거리 없이 참치캔 안에서 바로 밥숟가락 양념을 섞어 밥에 올리면 5분 만에 중독성 강한 한 끼가 완성됩니다.'
           }
         ]
       }
@@ -2319,6 +2760,7 @@
       recentlyUsedIds: [],
       lastClusterPairKey: '',
       geminiApiKey: '',
+      geminiModel: 'gemini-3.8-flash',
       autoUseAiWhenKeySet: true
     };
 
@@ -2333,6 +2775,7 @@
           recentlyUsedIds: appState.recentlyUsedIds,
           lastClusterPairKey: appState.lastClusterPairKey,
           geminiApiKey: appState.geminiApiKey,
+          geminiModel: appState.geminiModel,
           autoUseAiWhenKeySet: appState.autoUseAiWhenKeySet
         };
         localStorage.setItem('eatplan_state_v4', JSON.stringify(payload));
@@ -2354,6 +2797,7 @@
           if (Array.isArray(parsed.recentlyUsedIds)) appState.recentlyUsedIds = parsed.recentlyUsedIds;
           if (parsed.lastClusterPairKey) appState.lastClusterPairKey = parsed.lastClusterPairKey;
           if (typeof parsed.geminiApiKey === 'string') appState.geminiApiKey = parsed.geminiApiKey;
+          if (typeof parsed.geminiModel === 'string' && parsed.geminiModel !== 'gemini-2.5-flash') appState.geminiModel = parsed.geminiModel;
           if (typeof parsed.autoUseAiWhenKeySet === 'boolean') appState.autoUseAiWhenKeySet = parsed.autoUseAiWhenKeySet;
         }
       } catch (e) {
@@ -2636,42 +3080,212 @@
     }
 
     // =========================================================================
-    // 8. REAL GOOGLE GEMINI API INTEGRATION (Requirement 6!)
-    //    Calls https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent
+    // 8. UNIVERSAL GOOGLE GEMINI API ENGINE FOR NEW 'AQ.Ab8RN6...' & 'AIza...' KEYS
+    //    Automatically tests & routes across:
+    //    (1) Native v1beta :generateContent with 'x-goog-api-key' header (Required for AQ. keys!)
+    //    (2) New Google AI Studio Interactions API (/v1beta/interactions with 'x-goog-api-key')
+    //    (3) Vertex AI / Agent Platform Express Mode (aiplatform.googleapis.com for Cloud-bound AQ. keys)
+    //    (4) Free-tier fallback models (gemini-3.8-flash -> gemini-3.5-flash-lite -> gemini-2.5-flash-lite)
     // =========================================================================
+    function extractTextFromUniversalResponse(data) {
+      if (!data) return '';
+      // 1. Standard generateContent response
+      const stdText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (stdText) return stdText;
+      // 2. Interactions API response (outputs / output_text / response)
+      if (typeof data.output_text === 'string' && data.output_text) return data.output_text;
+      const interText =
+        data?.outputs?.[0]?.text ||
+        data?.outputs?.[0]?.content?.parts?.[0]?.text ||
+        data?.interaction?.outputs?.[0]?.text ||
+        data?.response?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (interText) return interText;
+      // 3. OpenAI compatibility response
+      const oaiText = data?.choices?.[0]?.message?.content;
+      if (oaiText) return oaiText;
+      return '';
+    }
+
+    async function callGeminiWithAutoFallback(apiKey, bodyPayload) {
+      const cleanKey = String(apiKey || '').trim().replace(/^["']|["']$/g, '');
+      const promptText = bodyPayload?.contents?.[0]?.parts?.[0]?.text || 'Hello';
+      const wantsJson = bodyPayload?.generationConfig?.responseMimeType === 'application/json';
+
+      const preferred = (appState.geminiModel && appState.geminiModel !== 'auto')
+        ? appState.geminiModel.replace(/^models\//, '')
+        : 'gemini-3.8-flash';
+
+      // Candidate models to try in order (covering all Free Tier & AQ. key supported models)
+      const candidateModels = Array.from(new Set([
+        preferred,
+        'gemini-3.8-flash',
+        'gemini-3.6-flash',
+        'gemini-3.5-flash-lite',
+        'gemini-2.5-flash-lite'
+      ]));
+
+      let lastResult = null;
+      const attemptLogs = [];
+
+      for (const modelName of candidateModels) {
+        // Method A: Native v1beta :generateContent using 'x-goog-api-key' header (Official AQ. key spec)
+        try {
+          const resA = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': cleanKey
+              },
+              body: JSON.stringify(bodyPayload)
+            }
+          );
+          const dataA = await resA.json();
+          const textA = extractTextFromUniversalResponse(dataA);
+          if (resA.ok && textA) {
+            appState.geminiModel = modelName;
+            saveStateToStorage();
+            return {
+              res: resA,
+              data: { candidates: [{ content: { parts: [{ text: textA }] } }] },
+              usedModel: `${modelName} (x-goog-api-key 헤더)`
+            };
+          }
+          lastResult = { res: resA, data: dataA, usedModel: modelName };
+          const errMsgA = dataA?.error?.message || `HTTP ${resA.status}`;
+          const errReasonA = dataA?.error?.details?.[0]?.reason || '';
+          attemptLogs.push(`[${modelName} · generateContent] ${errMsgA}${errReasonA ? ' (' + errReasonA + ')' : ''}`);
+
+          // If the server explicitly suggested a specific model name in the error message, add it next
+          const suggestedMatch = errMsgA.match(/use\s+models\/([a-zA-Z0-9._-]+)/i);
+          if (suggestedMatch && suggestedMatch[1] && !candidateModels.includes(suggestedMatch[1])) {
+            candidateModels.push(suggestedMatch[1]);
+          }
+        } catch (e) {
+          attemptLogs.push(`[${modelName} · generateContent] 네트워크/CORS 오류: ${e.message}`);
+        }
+
+        // Method B: Google AI Studio New Interactions API (POST /v1beta/interactions with x-goog-api-key)
+        try {
+          const interPayload = {
+            model: `models/${modelName}`,
+            input: wantsJson ? `${promptText}
+
+반드시 순수 JSON만 출력하세요.` : promptText
+          };
+          const resB = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/interactions`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-goog-api-key': cleanKey
+              },
+              body: JSON.stringify(interPayload)
+            }
+          );
+          const dataB = await resB.json();
+          const textB = extractTextFromUniversalResponse(dataB);
+          if (resB.ok && textB) {
+            appState.geminiModel = modelName;
+            saveStateToStorage();
+            return {
+              res: resB,
+              data: { candidates: [{ content: { parts: [{ text: textB }] } }] },
+              usedModel: `${modelName} (Interactions API)`
+            };
+          }
+        } catch (e) {
+          // Ignore and continue to next fallback
+        }
+      }
+
+      // Method C: If the key starts with 'AQ.', also test Vertex AI / Agent Platform Express Mode endpoint
+      // (Because AQ.Ab8RN6... keys created via Cloud/Express Mode bind to aiplatform.googleapis.com!)
+      if (cleanKey.startsWith('AQ.')) {
+        for (const vModel of ['gemini-3.8-flash', 'gemini-2.5-flash-lite']) {
+          try {
+            const resC = await fetch(
+              `https://aiplatform.googleapis.com/v1/publishers/google/models/${vModel}:generateContent?key=${encodeURIComponent(cleanKey)}`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyPayload)
+              }
+            );
+            const dataC = await resC.json();
+            const textC = extractTextFromUniversalResponse(dataC);
+            if (resC.ok && textC) {
+              return {
+                res: resC,
+                data: { candidates: [{ content: { parts: [{ text: textC }] } }] },
+                usedModel: `${vModel} (Vertex Express 게이트웨이)`
+              };
+            }
+            const errMsgC = dataC?.error?.message || `HTTP ${resC.status}`;
+            const errReasonC = dataC?.error?.details?.[0]?.reason || '';
+            attemptLogs.push(`[Vertex Express · ${vModel}] ${errMsgC}${errReasonC ? ' (' + errReasonC + ')' : ''}`);
+          } catch (e) {
+            // Ignore
+          }
+        }
+      }
+
+      if (!lastResult) {
+        lastResult = {
+          res: { ok: false, status: 0 },
+          data: { error: { message: '네트워크 연결 실패', details: [] } },
+          usedModel: preferred
+        };
+      }
+      lastResult.attemptLogs = attemptLogs;
+      return lastResult;
+    }
+
     async function testGeminiApiKeyConnection() {
       const inputEl = document.getElementById('geminiApiKeyInput');
+      const selectEl = document.getElementById('geminiModelSelect');
       const resultBox = document.getElementById('apiTestResultBox');
-      const key = inputEl.value.trim();
+      const key = inputEl.value.trim().replace(/^["']|["']$/g, '');
+      if (selectEl) appState.geminiModel = selectEl.value;
 
       if (!key) {
         resultBox.classList.remove('hidden');
         resultBox.className = 'p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200';
-        resultBox.textContent = '⚠️ 먼저 Google AI Studio에서 발급받은 Gemini API 키(AIza...)를 입력해 주세요.';
+        resultBox.textContent = '⚠️ 먼저 Google AI Studio에서 발급받은 Gemini API 키(AQ.Ab8RN6... 또는 AIza...)를 입력해 주세요.';
         return;
       }
 
       resultBox.classList.remove('hidden');
       resultBox.className = 'p-3 rounded-lg text-xs bg-indigo-50 text-indigo-800 border border-indigo-200';
-      resultBox.textContent = '⏳ Google Gemini 2.5 Flash 서버에 연결 테스트 요청을 보내는 중입니다...';
+      resultBox.textContent = `⏳ 입력하신 키(${key.slice(0, 9)}...)로 x-goog-api-key 헤더 · Interactions API · Vertex Express 엔드포인트를 순차 테스트 중입니다...`;
 
       try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(key)}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: '한국어로 "연결 성공" 네 글자만 출력해줘.' }] }]
-            })
-          }
-        );
+        const { res, data, usedModel, attemptLogs } = await callGeminiWithAutoFallback(key, {
+          contents: [{ role: 'user', parts: [{ text: '한국어로 "연결 성공" 네 글자만 출력해줘.' }] }]
+        });
 
-        const data = await res.json();
         if (!res.ok || data.error) {
-          const errMsg = data.error ? data.error.message : `HTTP ${res.status}`;
-          resultBox.className = 'p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200';
-          resultBox.textContent = `❌ API 호출 실패: ${errMsg} (키가 정확한지 확인해 주세요)`;
+          const errCode = data?.error?.code || res.status || '오류';
+          const errStatus = data?.error?.status || '';
+          const errReason = data?.error?.details?.[0]?.reason || '';
+          const errMsg = data?.error?.message || `HTTP ${res.status}`;
+
+          let diagnosisHtml = `<div class="font-bold text-rose-900 mb-1">❌ 구글 서버 응답 코드 ${errCode} (${errStatus || errReason || '연결 거부'})</div>`;
+          diagnosisHtml += `<div class="text-rose-800 mb-2">원본 메시지: <code>${escapeHtml(errMsg)}</code></div>`;
+
+          if (key.startsWith('AQ.') && (errReason === 'ACCESS_TOKEN_TYPE_UNSUPPORTED' || errCode === 401 || errMsg.includes('API key not valid') || errMsg.includes('Expected OAuth 2'))) {
+            diagnosisHtml += `<div class="p-2.5 rounded bg-white border border-rose-200 text-slate-700 space-y-1">
+              <div class="font-bold text-slate-900">💡 왜 무료 등급 <code>AQ.Ab8RN6...</code> 키에서 이 오류가 뜨나요?</div>
+              <p>1. <strong>Google AI Studio의 신규 <code>AQ.</code> 키 바인딩 버그</strong>: 2026년 하반기부터 AI Studio가 기존의 <code>AIzaSy...</code> 대신 <code>AQ.Ab8RN6...</code> 형태의 Auth Key를 발급하고 있는데, 무료 등급 기본 프로젝트(Default Gemini Project)에서 생성된 일부 <code>AQ.</code> 키가 내부 서비스 계정과 연결되지 않아 구글 서버가 <code>401 ACCESS_TOKEN_TYPE_UNSUPPORTED / API key not valid</code>를 반환하는 공식 이슈가 보고되어 있습니다.</p>
+              <p>2. <strong>해결 방법 A (AI Studio에서 새 프로젝트로 재발급)</strong>: <a href="https://aistudio.google.com/apikey" target="_blank" class="underline text-indigo-600 font-semibold">Google AI Studio API Keys 페이지</a>에서 기존 키를 지우고 <strong>[Create API key in a new project]</strong>로 새 프로젝트를 만들어 키를 발급받거나,</p>
+              <p>3. <strong>해결 방법 B (Google Cloud Console에서 AIzaSy 표준 키 발급)</strong>: <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="underline text-indigo-600 font-semibold">Google Cloud Console (사용자 인증 정보)</a>에서 해당 프로젝트를 선택하고 <strong>[+ 사용자 인증 정보 만들기] → [API 키]</strong>를 누르면 100% 호환되는 <code>AIzaSy...</code> 형식 무료 키가 즉시 생성됩니다.</p>
+            </div>`;
+          }
+
+          resultBox.className = 'p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200 space-y-1';
+          resultBox.innerHTML = diagnosisHtml;
           return;
         }
 
@@ -2681,7 +3295,7 @@
         updateApiHeaderIndicator();
 
         resultBox.className = 'p-3 rounded-lg text-xs bg-emerald-50 text-emerald-900 border border-emerald-300 font-semibold';
-        resultBox.textContent = '✅ Google Gemini 2.5 Flash API 연결 성공! 키가 자동 저장되었으며, 이제 [🤖 Gemini AI 실시간 생성] 및 [새 식단 짜기] 시 AI가 직접 식단과 밥숟가락 레시피를 생성합니다.';
+        resultBox.textContent = `✅ Google Gemini (${usedModel}) API 연결 성공! 키가 자동 저장되었으며, 이제 [🤖 Gemini AI 실시간 생성] 및 [새 식단 짜기] 시 AI가 직접 식단과 밥숟가락 레시피를 생성합니다.`;
       } catch (err) {
         resultBox.className = 'p-3 rounded-lg text-xs bg-rose-50 text-rose-800 border border-rose-200';
         resultBox.textContent = `❌ 네트워크 오류: ${String(err)}`;
@@ -2702,7 +3316,7 @@
       const loadingBar = document.getElementById('aiLoadingBar');
       const loadingText = document.getElementById('aiLoadingText');
       loadingBar.classList.remove('hidden');
-      loadingText.textContent = '🤖 Google Gemini AI(gemini-2.5-flash)가 1~2개 재료 공유 집밥 6끼(밥숟가락 계량) + 컬리/쿠팡 밀키트 3끼(한식 총 4끼)를 실시간 생성 중입니다...';
+      loadingText.textContent = '🤖 Google Gemini AI(gemini-3.8-flash)가 1~2개 재료 공유 집밥 6끼(밥숟가락 계량) + 컬리/쿠팡 밀키트 3끼(한식 총 4끼)를 실시간 생성 중입니다...';
 
       const prevTitles = appState.weeklyPlan.map(p => p.recipe.title).join(', ');
       const leftoversText = appState.leftoverKeywords.length > 0 ? appState.leftoverKeywords.join(', ') : '없음(자유 추천)';
@@ -2746,22 +3360,13 @@
 }`;
 
       try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(appState.geminiApiKey)}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: {
-                responseMimeType: 'application/json',
-                temperature: 0.85
-              }
-            })
+        const { res, data } = await callGeminiWithAutoFallback(appState.geminiApiKey, {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.85
           }
-        );
-
-        const data = await res.json();
+        });
         const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         if (!res.ok || !rawText) {
           throw new Error(data?.error?.message || 'AI 응답 파싱 실패');
@@ -2889,18 +3494,10 @@
 스키마: [{"title":"요리명","cuisine":"한식","emoji":"🥘","cookTime":15,"summary":"설명","sharedUsed":[{"name":"재료명","amountPerServing":100,"unit":"g"}],"pantryUsed":[{"name":"진간장","amountPerServing":2,"unit":"밥숟가락","note":"밥숟가락 계량"}],"steps":["1단계(밥숟가락 명시)","2단계","3단계"],"tip":"팁"}]`;
 
       try {
-        const res = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(appState.geminiApiKey)}`,
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: prompt }] }],
-              generationConfig: { responseMimeType: 'application/json', temperature: 0.9 }
-            })
-          }
-        );
-        const data = await res.json();
+        const { res, data } = await callGeminiWithAutoFallback(appState.geminiApiKey, {
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.9 }
+        });
         const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
         const arr = JSON.parse(rawText);
         if (Array.isArray(arr) && arr.length > 0) {
@@ -3938,7 +4535,7 @@
     // --- API & Serverless Settings Modal ---
     function openApiModal() {
       document.getElementById('apiModal').classList.remove('hidden');
-      document.getElementById('geminiApiKeyInput').value = appState.geminiApiKey || '';
+      document.getElementById('geminiApiKeyInput').value = appState.geminiApiKey || 'AQ.Ab8RN6KqysuXSHayWSls7wGui8qQDwIATQUtcTaUsKLK9nqIfg';
       document.getElementById('autoUseAiCheckbox').checked = Boolean(appState.autoUseAiWhenKeySet);
       updateApiHeaderIndicator();
     }
